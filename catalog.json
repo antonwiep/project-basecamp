@@ -1,0 +1,1577 @@
+{
+ "kiwix_base": "https://download.kiwix.org/zim",
+ "categories": [
+  {
+   "id": "karten",
+   "title": "Karten"
+  },
+  {
+   "id": "wissen",
+   "title": "Nachschlagewerke"
+  },
+  {
+   "id": "medizin",
+   "title": "Medizin & Gesundheit"
+  },
+  {
+   "id": "technik",
+   "title": "Reparatur & Technik"
+  },
+  {
+   "id": "praxis",
+   "title": "Praxis & Notfall"
+  },
+  {
+   "id": "reisen",
+   "title": "Reisen & Welt"
+  },
+  {
+   "id": "buecher",
+   "title": "Bücher & Texte"
+  },
+  {
+   "id": "lernen",
+   "title": "Lernen"
+  },
+  {
+   "id": "code",
+   "title": "Programmieren"
+  },
+  {
+   "id": "qa",
+   "title": "Fragen & Antworten"
+  },
+  {
+   "id": "sprache",
+   "title": "Sprache"
+  }
+ ],
+ "profiles": [
+  {
+   "id": "S",
+   "title": "Klein",
+   "desc": "Wikipedia Deutsch (Text), iFixit, Wörterbuch, Notfall-Wissen, Weltkarte."
+  },
+  {
+   "id": "M",
+   "title": "Mittel",
+   "desc": "Wikipedia Deutsch mit Bildern, Bücher, Lehrbücher, Reiseführer, Karte Deutschland."
+  },
+  {
+   "id": "L",
+   "title": "Groß",
+   "desc": "Dazu Wikipedia Englisch, Fachwissen als Ergänzung, Karte DACH."
+  },
+  {
+   "id": "X",
+   "title": "Maximal",
+   "desc": "Alles, auch die riesigen englischen Sammlungen und Karte Europa."
+  }
+ ],
+ "items": [
+  {
+   "id": "wikipedia_de_all_mini",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "de",
+   "gb": 4.4,
+   "p": "",
+   "title": "Wikipedia Deutsch (kompakt)",
+   "desc": "Alle Artikel, nur die Einleitungen"
+  },
+  {
+   "id": "wikipedia_de_all_maxi",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "de",
+   "gb": 45,
+   "p": "MLX",
+   "title": "Wikipedia Deutsch",
+   "desc": "Alle Artikel mit Bildern"
+  },
+  {
+   "id": "wikipedia_de_all_nopic",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "de",
+   "gb": 17,
+   "p": "S",
+   "title": "Wikipedia Deutsch (ohne Bilder)",
+   "desc": "Alle Artikel, ohne Bilder"
+  },
+  {
+   "id": "wikipedia_en_top_maxi",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "en",
+   "gb": 6.5,
+   "p": "",
+   "title": "Wikipedia English (Top)",
+   "desc": "Die wichtigsten englischen Artikel mit Bildern"
+  },
+  {
+   "id": "wikipedia_en_all_mini",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "en",
+   "gb": 13,
+   "p": "",
+   "title": "Wikipedia English (kompakt)",
+   "desc": "Alle Artikel, nur die Einleitungen"
+  },
+  {
+   "id": "wikipedia_en_all_nopic",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "en",
+   "gb": 49,
+   "p": "",
+   "title": "Wikipedia English (ohne Bilder)",
+   "desc": "Alle Artikel, ohne Bilder"
+  },
+  {
+   "id": "wikipedia_en_all_maxi",
+   "folder": "wikipedia",
+   "cat": "wissen",
+   "lang": "en",
+   "gb": 119,
+   "p": "LX",
+   "title": "Wikipedia English",
+   "desc": "Alle Artikel mit Bildern"
+  },
+  {
+   "id": "psiram_de_all_maxi",
+   "folder": "other",
+   "cat": "wissen",
+   "lang": "de",
+   "gb": 0.18,
+   "p": "MLX",
+   "title": "Psiram",
+   "desc": "Kritisch zu Esoterik und Pseudomedizin"
+  },
+  {
+   "id": "wikipedia_en_medicine_maxi",
+   "folder": "wikipedia",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 1.7,
+   "p": "SMLX",
+   "title": "WikiMed",
+   "desc": "Große Medizin-Enzyklopädie (Englisch, kein deutsches Gegenstück)"
+  },
+  {
+   "id": "wikipedia_de_medicine_maxi",
+   "folder": "wikipedia",
+   "cat": "medizin",
+   "lang": "de",
+   "gb": 0.4,
+   "p": "",
+   "title": "Medizin (Wikipedia DE)",
+   "desc": "Nur nötig ohne die komplette deutsche Wikipedia"
+  },
+  {
+   "id": "zimgit-medicine_en",
+   "folder": "other",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 0.07,
+   "p": "SMLX",
+   "title": "Erste Hilfe & Medizin",
+   "desc": "Handbücher für Erste Hilfe ohne Arzt"
+  },
+  {
+   "id": "nhs.uk_en_medicines",
+   "folder": "zimit",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 0.02,
+   "p": "SMLX",
+   "title": "NHS Medikamente",
+   "desc": "Gängige Medikamente erklärt"
+  },
+  {
+   "id": "mdwiki_en_all_maxi",
+   "folder": "other",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 2.1,
+   "p": "LX",
+   "title": "MDWiki",
+   "desc": "Medizinwissen, von Fachleuten gepflegt"
+  },
+  {
+   "id": "medlineplus.gov_en_all",
+   "folder": "zimit",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 1.8,
+   "p": "LX",
+   "title": "MedlinePlus",
+   "desc": "Gesundheitsinfos der US-Medizinbibliothek"
+  },
+  {
+   "id": "irp.fas.org_en_military-medicine",
+   "folder": "zimit",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 0.07,
+   "p": "LX",
+   "title": "Militärmedizin (FAS)",
+   "desc": "Notfallmedizin-Handbücher"
+  },
+  {
+   "id": "librepathology_en_all_maxi",
+   "folder": "other",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 0.09,
+   "p": "LX",
+   "title": "LibrePathology",
+   "desc": "Pathologie-Nachschlagewerk"
+  },
+  {
+   "id": "libretexts.org_en_med",
+   "folder": "libretexts",
+   "cat": "medizin",
+   "lang": "en",
+   "gb": 1.1,
+   "p": "LX",
+   "title": "LibreTexts Medizin",
+   "desc": "Freie Lehrbücher Medizin & Pflege"
+  },
+  {
+   "id": "ifixit_en_all",
+   "folder": "ifixit",
+   "cat": "technik",
+   "lang": "en",
+   "gb": 3.3,
+   "p": "MLX",
+   "title": "iFixit (English)",
+   "desc": "Viel mehr Anleitungen als die deutsche Version"
+  },
+  {
+   "id": "ifixit_de_all",
+   "folder": "ifixit",
+   "cat": "technik",
+   "lang": "de",
+   "gb": 3.3,
+   "p": "SMLX",
+   "title": "iFixit (Deutsch)",
+   "desc": "Reparaturanleitungen auf Deutsch"
+  },
+  {
+   "id": "appropedia_en_all_maxi",
+   "folder": "other",
+   "cat": "technik",
+   "lang": "en",
+   "gb": 0.55,
+   "p": "LX",
+   "title": "Appropedia",
+   "desc": "Einfache, nachhaltige Technik zum Selberbauen"
+  },
+  {
+   "id": "energypedia_en_all_maxi",
+   "folder": "other",
+   "cat": "technik",
+   "lang": "en",
+   "gb": 0.76,
+   "p": "LX",
+   "title": "Energypedia",
+   "desc": "Solar, Strom und Energie"
+  },
+  {
+   "id": "openstreetmap-wiki_en_all_nopic",
+   "folder": "other",
+   "cat": "technik",
+   "lang": "en",
+   "gb": 0.51,
+   "p": "",
+   "title": "OpenStreetMap Wiki",
+   "desc": "Karten und Geodaten"
+  },
+  {
+   "id": "docs.python.org_en_all",
+   "folder": "zimit",
+   "cat": "technik",
+   "lang": "en",
+   "gb": 2.7,
+   "p": "",
+   "title": "Python Doku",
+   "desc": "Offizielle Python-Dokumentation"
+  },
+  {
+   "id": "zimgit-post-disaster_en",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 0.62,
+   "p": "SMLX",
+   "title": "Nach der Katastrophe",
+   "desc": "Handbücher für Notlagen"
+  },
+  {
+   "id": "zimgit-water_en",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 0.02,
+   "p": "SMLX",
+   "title": "Wasser",
+   "desc": "Wasser finden und sauber machen"
+  },
+  {
+   "id": "zimgit-food-preparation_en",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 0.09,
+   "p": "SMLX",
+   "title": "Essen zubereiten",
+   "desc": "Kochen und Haltbarmachen"
+  },
+  {
+   "id": "zimgit-knots_en",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 0.03,
+   "p": "SMLX",
+   "title": "Knoten",
+   "desc": "Knoten Schritt für Schritt"
+  },
+  {
+   "id": "kochwiki.org_de_all_maxi",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "de",
+   "gb": 0.07,
+   "p": "SMLX",
+   "title": "Kochwiki",
+   "desc": "Rezepte auf Deutsch"
+  },
+  {
+   "id": "ready.gov_en_all",
+   "folder": "zimit",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 1.9,
+   "p": "LX",
+   "title": "Ready.gov",
+   "desc": "Notfallvorsorge"
+  },
+  {
+   "id": "gardenology.org_en_all",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 0.11,
+   "p": "LX",
+   "title": "Gardenology",
+   "desc": "Pflanzen und Garten"
+  },
+  {
+   "id": "cd3wdproject.org_en_all",
+   "folder": "zimit",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 0.55,
+   "p": "LX",
+   "title": "CD3WD",
+   "desc": "Praxiswissen: Landwirtschaft, Bau, Wasser"
+  },
+  {
+   "id": "trueprepper.com_en_all",
+   "folder": "other",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 1.3,
+   "p": "LX",
+   "title": "TruePrepper",
+   "desc": "Krisenvorsorge"
+  },
+  {
+   "id": "armypubs_en_all",
+   "folder": "zimit",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 7.7,
+   "p": "LX",
+   "title": "US Army Handbücher",
+   "desc": "Field Manuals zu Überleben, Technik, Medizin"
+  },
+  {
+   "id": "survivorlibrary.com_en_all",
+   "folder": "zimit",
+   "cat": "praxis",
+   "lang": "en",
+   "gb": 205,
+   "p": "X",
+   "title": "Survivor Library",
+   "desc": "Riesige Sammlung alter Praxisbücher"
+  },
+  {
+   "id": "wikivoyage_de_all_nopic",
+   "folder": "wikivoyage",
+   "cat": "reisen",
+   "lang": "de",
+   "gb": 0.21,
+   "p": "S",
+   "title": "Wikivoyage Deutsch (kompakt)",
+   "desc": "Reiseführer ohne Bilder"
+  },
+  {
+   "id": "wikivoyage_de_all_maxi",
+   "folder": "wikivoyage",
+   "cat": "reisen",
+   "lang": "de",
+   "gb": 1.0,
+   "p": "MLX",
+   "title": "Wikivoyage Deutsch",
+   "desc": "Reiseführer für die ganze Welt"
+  },
+  {
+   "id": "wikivoyage_en_all_maxi",
+   "folder": "wikivoyage",
+   "cat": "reisen",
+   "lang": "en",
+   "gb": 1.0,
+   "p": "X",
+   "title": "Wikivoyage English",
+   "desc": "Travel guides for the world"
+  },
+  {
+   "id": "theworldfactbook_en_all",
+   "folder": "other",
+   "cat": "reisen",
+   "lang": "en",
+   "gb": 0.39,
+   "p": "LX",
+   "title": "World Factbook",
+   "desc": "Daten zu allen Ländern"
+  },
+  {
+   "id": "gutenberg_de_all",
+   "folder": "gutenberg",
+   "cat": "buecher",
+   "lang": "de",
+   "gb": 10,
+   "p": "MLX",
+   "title": "Projekt Gutenberg (Deutsch)",
+   "desc": "Tausende freie Bücher"
+  },
+  {
+   "id": "gutenberg_en_all",
+   "folder": "gutenberg",
+   "cat": "buecher",
+   "lang": "en",
+   "gb": 206,
+   "p": "X",
+   "title": "Project Gutenberg (English)",
+   "desc": "Über 70.000 freie Bücher"
+  },
+  {
+   "id": "wikisource_de_all_nopic",
+   "folder": "wikisource",
+   "cat": "buecher",
+   "lang": "de",
+   "gb": 1.1,
+   "p": "MLX",
+   "title": "Wikisource Deutsch",
+   "desc": "Freie Texte und Quellen"
+  },
+  {
+   "id": "wikisource_en_all_nopic",
+   "folder": "wikisource",
+   "cat": "buecher",
+   "lang": "en",
+   "gb": 3.6,
+   "p": "X",
+   "title": "Wikisource English",
+   "desc": "Free texts and sources"
+  },
+  {
+   "id": "wikiquote_de_all_maxi",
+   "folder": "wikiquote",
+   "cat": "buecher",
+   "lang": "de",
+   "gb": 0.04,
+   "p": "MLX",
+   "title": "Wikiquote Deutsch",
+   "desc": "Zitate"
+  },
+  {
+   "id": "wikibooks_de_all_maxi",
+   "folder": "wikibooks",
+   "cat": "lernen",
+   "lang": "de",
+   "gb": 3.1,
+   "p": "MLX",
+   "title": "Wikibooks Deutsch",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "wikibooks_en_all_maxi",
+   "folder": "wikibooks",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 4.4,
+   "p": "X",
+   "title": "Wikibooks English",
+   "desc": "Free textbooks"
+  },
+  {
+   "id": "wikiversity_de_all_maxi",
+   "folder": "wikiversity",
+   "cat": "lernen",
+   "lang": "de",
+   "gb": 1.1,
+   "p": "MLX",
+   "title": "Wikiversity Deutsch",
+   "desc": "Kurse und Lernmaterial"
+  },
+  {
+   "id": "phet_de_all",
+   "folder": "phet",
+   "cat": "lernen",
+   "lang": "de",
+   "gb": 0.1,
+   "p": "MLX",
+   "title": "PhET Simulationen",
+   "desc": "Interaktive Physik und Chemie"
+  },
+  {
+   "id": "klexikon_de_all_maxi",
+   "folder": "other",
+   "cat": "lernen",
+   "lang": "de",
+   "gb": 0.13,
+   "p": "MLX",
+   "title": "Klexikon",
+   "desc": "Lexikon für Kinder"
+  },
+  {
+   "id": "libretexts.org_en_bio",
+   "folder": "libretexts",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 2.1,
+   "p": "X",
+   "title": "LibreTexts Biologie",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "libretexts.org_en_chem",
+   "folder": "libretexts",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 2.0,
+   "p": "X",
+   "title": "LibreTexts Chemie",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "libretexts.org_en_phys",
+   "folder": "libretexts",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 0.53,
+   "p": "X",
+   "title": "LibreTexts Physik",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "libretexts.org_en_math",
+   "folder": "libretexts",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 0.79,
+   "p": "X",
+   "title": "LibreTexts Mathe",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "libretexts.org_en_eng",
+   "folder": "libretexts",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 0.65,
+   "p": "X",
+   "title": "LibreTexts Ingenieurwesen",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "libretexts.org_en_geo",
+   "folder": "libretexts",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 1.1,
+   "p": "X",
+   "title": "LibreTexts Geowissenschaften",
+   "desc": "Freie Lehrbücher"
+  },
+  {
+   "id": "crashcourse_en_all",
+   "folder": "other",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 21,
+   "p": "X",
+   "title": "Crash Course",
+   "desc": "Videokurse zu vielen Fächern"
+  },
+  {
+   "id": "khanacademy_en_all",
+   "folder": "other",
+   "cat": "lernen",
+   "lang": "en",
+   "gb": 168,
+   "p": "",
+   "title": "Khan Academy",
+   "desc": "Videokurse (Stand 2023)"
+  },
+  {
+   "id": "devdocs_en_python",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0042,
+   "p": "SMLX",
+   "title": "Python Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_bash",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Bash Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_zsh",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "SMLX",
+   "title": "Zsh Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_javascript",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0025,
+   "p": "SMLX",
+   "title": "JavaScript Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_typescript",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "SMLX",
+   "title": "TypeScript Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_node",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0014,
+   "p": "SMLX",
+   "title": "Node.js Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_html",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0016,
+   "p": "SMLX",
+   "title": "HTML Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_css",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0026,
+   "p": "SMLX",
+   "title": "CSS Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_http",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0019,
+   "p": "SMLX",
+   "title": "HTTP Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_git",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0015,
+   "p": "SMLX",
+   "title": "Git Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_docker",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0017,
+   "p": "SMLX",
+   "title": "Docker Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_homebrew",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0038,
+   "p": "SMLX",
+   "title": "Homebrew Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_sqlite",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0033,
+   "p": "SMLX",
+   "title": "SQLite Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_jq",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "jq Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_markdown",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0003,
+   "p": "SMLX",
+   "title": "Markdown Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_requests",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0003,
+   "p": "SMLX",
+   "title": "Python Requests Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_pytest",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0007,
+   "p": "SMLX",
+   "title": "pytest Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_man",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.028,
+   "p": "MLX",
+   "title": "Linux man pages Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_dom",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.014,
+   "p": "MLX",
+   "title": "Web-APIs (DOM) Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_postgresql",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0025,
+   "p": "MLX",
+   "title": "PostgreSQL Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_go",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0016,
+   "p": "MLX",
+   "title": "Go Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_rust",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0059,
+   "p": "MLX",
+   "title": "Rust Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_c",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0013,
+   "p": "MLX",
+   "title": "C Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_cpp",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0077,
+   "p": "MLX",
+   "title": "C++ Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_numpy",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.005,
+   "p": "MLX",
+   "title": "NumPy Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_pandas",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0047,
+   "p": "MLX",
+   "title": "pandas Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_matplotlib",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.032,
+   "p": "MLX",
+   "title": "Matplotlib Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_react",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0026,
+   "p": "MLX",
+   "title": "React Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_vue",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "MLX",
+   "title": "Vue Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_svelte",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "MLX",
+   "title": "Svelte Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_nextjs",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "MLX",
+   "title": "Next.js Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_tailwindcss",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "MLX",
+   "title": "Tailwind CSS Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_flask",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "MLX",
+   "title": "Flask Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_fastapi",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0024,
+   "p": "MLX",
+   "title": "FastAPI Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_django",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0021,
+   "p": "MLX",
+   "title": "Django Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_nginx",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "MLX",
+   "title": "nginx Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_kubectl",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "MLX",
+   "title": "kubectl Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_lua",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "MLX",
+   "title": "Lua Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_php",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0068,
+   "p": "MLX",
+   "title": "PHP Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_ruby",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.002,
+   "p": "MLX",
+   "title": "Ruby Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_openjdk",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.014,
+   "p": "MLX",
+   "title": "Java (OpenJDK) Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_kotlin",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0078,
+   "p": "MLX",
+   "title": "Kotlin Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "cooking.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.23,
+   "p": "LX",
+   "title": "Kochen (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "diy.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 1.9,
+   "p": "LX",
+   "title": "Heimwerken (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "gardening.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.89,
+   "p": "LX",
+   "title": "Garten (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "outdoors.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.14,
+   "p": "LX",
+   "title": "Outdoor (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "bicycles.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.48,
+   "p": "LX",
+   "title": "Fahrrad (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "mechanics.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.33,
+   "p": "LX",
+   "title": "Auto (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "electronics.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 4.0,
+   "p": "LX",
+   "title": "Elektronik (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "superuser.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 3.7,
+   "p": "X",
+   "title": "Computer (Super User)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "apple.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 1.1,
+   "p": "X",
+   "title": "Apple (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "physics.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 1.7,
+   "p": "X",
+   "title": "Physik (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "chemistry.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.4,
+   "p": "X",
+   "title": "Chemie (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "biology.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.41,
+   "p": "X",
+   "title": "Biologie (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "travel.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.44,
+   "p": "X",
+   "title": "Reisen (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "money.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.24,
+   "p": "X",
+   "title": "Geld (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "woodworking.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.1,
+   "p": "X",
+   "title": "Holzarbeit (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "ham.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.07,
+   "p": "X",
+   "title": "Amateurfunk (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "medicalsciences.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.06,
+   "p": "X",
+   "title": "Medizin (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "sustainability.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 0.03,
+   "p": "X",
+   "title": "Nachhaltigkeit (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "math.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 6.9,
+   "p": "X",
+   "title": "Mathe (StackExchange)",
+   "desc": "Fragen und Antworten"
+  },
+  {
+   "id": "askubuntu.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "qa",
+   "lang": "en",
+   "gb": 2.6,
+   "p": "X",
+   "title": "Ask Ubuntu",
+   "desc": "Fragen und Antworten zu Linux"
+  },
+  {
+   "id": "stackoverflow.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 107,
+   "p": "",
+   "title": "Stack Overflow",
+   "desc": "Programmieren: Fragen und Antworten"
+  },
+  {
+   "id": "wiktionary_de_all_nopic",
+   "folder": "wiktionary",
+   "cat": "sprache",
+   "lang": "de",
+   "gb": 1.4,
+   "p": "SMLX",
+   "title": "Wiktionary Deutsch",
+   "desc": "Wörterbuch"
+  },
+  {
+   "id": "wiktionary_en_all_nopic",
+   "folder": "wiktionary",
+   "cat": "sprache",
+   "lang": "en",
+   "gb": 8.5,
+   "p": "X",
+   "title": "Wiktionary English",
+   "desc": "Dictionary"
+  }
+ ],
+ "models": [
+  {
+   "name": "qwen3.5:2b",
+   "gb": 1.9,
+   "min_ram": 8,
+   "title": "Qwen 3.5 · 2B",
+   "desc": "Sehr klein und schnell. Für alte Macs."
+  },
+  {
+   "name": "qwen3.5:4b",
+   "gb": 3.3,
+   "min_ram": 8,
+   "title": "Qwen 3.5 · 4B",
+   "desc": "Klein, erstaunlich gut, versteht Bilder."
+  },
+  {
+   "name": "medgemma1.5:4b",
+   "gb": 3.3,
+   "min_ram": 8,
+   "title": "MedGemma 1.5 · 4B",
+   "desc": "Spezialmodell Medizin (Englisch)."
+  },
+  {
+   "name": "gemma4:e2b-it-qat",
+   "gb": 4.3,
+   "min_ram": 8,
+   "title": "Gemma 4 · E2B",
+   "desc": "Google, gutes Deutsch, für 8 GB."
+  },
+  {
+   "name": "gemma4:e4b-it-qat",
+   "gb": 6.1,
+   "min_ram": 12,
+   "title": "Gemma 4 · E4B",
+   "desc": "Google, gutes Deutsch, sparsam."
+  },
+  {
+   "name": "qwen3.5:9b",
+   "gb": 6.6,
+   "min_ram": 16,
+   "title": "Qwen 3.5 · 9B",
+   "desc": "Stark für die Größe, denkt mit, versteht Bilder."
+  },
+  {
+   "name": "gemma4:12b-it-qat",
+   "gb": 7.2,
+   "min_ram": 16,
+   "title": "Gemma 4 · 12B",
+   "desc": "Bestes Allround-Modell für 16 GB. Sehr gutes Deutsch."
+  },
+  {
+   "name": "gpt-oss:20b",
+   "gb": 14,
+   "min_ram": 24,
+   "title": "gpt-oss · 20B",
+   "desc": "OpenAI, gutes Denken, nur Text."
+  },
+  {
+   "name": "devstral-small-2:24b",
+   "gb": 15,
+   "min_ram": 24,
+   "title": "Devstral Small 2 · 24B",
+   "desc": "Coding-Agent von Mistral. Versteht Bilder.",
+   "code": true
+  },
+  {
+   "name": "gemma4:26b-a4b-it-qat",
+   "gb": 16,
+   "min_ram": 32,
+   "title": "Gemma 4 · 26B MoE",
+   "desc": "Schnell (nur 4B aktiv), sehr gutes Deutsch."
+  },
+  {
+   "name": "medgemma:27b",
+   "gb": 17,
+   "min_ram": 32,
+   "title": "MedGemma · 27B",
+   "desc": "Spezialmodell Medizin, groß (Englisch)."
+  },
+  {
+   "name": "qwen3.8:27b",
+   "gb": 18,
+   "min_ram": 32,
+   "title": "Qwen 3.8 · 27B",
+   "desc": "Neueste Qwen-Generation. Am klügsten, aber langsamer."
+  },
+  {
+   "name": "qwen3-coder:30b",
+   "gb": 19,
+   "min_ram": 32,
+   "title": "Qwen3 Coder · 30B MoE",
+   "desc": "Spezialist für Code. Schnell, nur 3B aktiv.",
+   "code": true
+  },
+  {
+   "name": "gemma4:31b-it-qat",
+   "gb": 19,
+   "min_ram": 36,
+   "title": "Gemma 4 · 31B",
+   "desc": "Größtes Gemma, sehr gutes Deutsch."
+  },
+  {
+   "name": "qwen3.6:35b",
+   "gb": 23,
+   "min_ram": 48,
+   "title": "Qwen 3.6 · 35B MoE",
+   "desc": "Schnell (nur 3B aktiv) und sehr klug. Versteht Bilder."
+  },
+  {
+   "name": "qwen3-coder-next:latest",
+   "gb": 52,
+   "min_ram": 96,
+   "title": "Qwen3 Coder Next · 80B MoE",
+   "desc": "Stärkstes lokales Code-Modell.",
+   "code": true
+  },
+  {
+   "name": "gpt-oss:120b",
+   "gb": 65,
+   "min_ram": 96,
+   "title": "gpt-oss · 120B",
+   "desc": "OpenAI, groß, nur Text."
+  },
+  {
+   "name": "qwen3.5:122b",
+   "gb": 81,
+   "min_ram": 128,
+   "title": "Qwen 3.5 · 122B MoE",
+   "desc": "Das Größte, das auf einen Mac passt."
+  }
+ ],
+ "model_tiers": [
+  {
+   "max_ram": 12,
+   "label": "8 GB",
+   "num_ctx": 8192,
+   "default": "qwen3.5:4b",
+   "recommended": [
+    "qwen3.5:4b",
+    "gemma4:e2b-it-qat",
+    "qwen3.5:2b"
+   ],
+   "code_default": "qwen3.5:4b",
+   "code": [
+    "qwen3.5:4b"
+   ]
+  },
+  {
+   "max_ram": 31,
+   "label": "16 bis 24 GB",
+   "num_ctx": 16384,
+   "default": "gemma4:12b-it-qat",
+   "recommended": [
+    "gemma4:12b-it-qat",
+    "qwen3.5:9b",
+    "medgemma1.5:4b"
+   ],
+   "code_default": "qwen3.5:9b",
+   "code": [
+    "qwen3.5:9b",
+    "devstral-small-2:24b"
+   ]
+  },
+  {
+   "max_ram": 47,
+   "label": "32 bis 36 GB",
+   "num_ctx": 32768,
+   "default": "gemma4:26b-a4b-it-qat",
+   "recommended": [
+    "gemma4:26b-a4b-it-qat",
+    "qwen3.8:27b",
+    "qwen3.5:9b",
+    "medgemma1.5:4b"
+   ],
+   "code_default": "qwen3-coder:30b",
+   "code": [
+    "qwen3-coder:30b",
+    "devstral-small-2:24b"
+   ]
+  },
+  {
+   "max_ram": 95,
+   "label": "48 bis 64 GB",
+   "num_ctx": 32768,
+   "default": "qwen3.6:35b",
+   "recommended": [
+    "qwen3.6:35b",
+    "qwen3.8:27b",
+    "gemma4:31b-it-qat",
+    "medgemma:27b"
+   ],
+   "code_default": "qwen3-coder:30b",
+   "code": [
+    "qwen3-coder:30b",
+    "devstral-small-2:24b"
+   ]
+  },
+  {
+   "max_ram": 9999,
+   "label": "96 GB+",
+   "num_ctx": 65536,
+   "default": "gpt-oss:120b",
+   "recommended": [
+    "gpt-oss:120b",
+    "qwen3.5:122b",
+    "qwen3.6:35b",
+    "medgemma:27b"
+   ],
+   "code_default": "qwen3-coder-next:latest",
+   "code": [
+    "qwen3-coder-next:latest",
+    "qwen3-coder:30b"
+   ]
+  }
+ ],
+ "maps_builds": "https://build-metadata.protomaps.dev/builds.json",
+ "maps_base": "https://build.protomaps.com",
+ "geonames_base": "https://download.geonames.org/export/dump",
+ "maps": [
+  {
+   "id": "map_world",
+   "title": "Weltkarte (Übersicht)",
+   "desc": "Ganze Welt mit Ländern, Städten und großen Straßen",
+   "bbox": [
+    -180,
+    -85,
+    180,
+    85
+   ],
+   "maxzoom": 7,
+   "gb": 0.19,
+   "p": "SMLX",
+   "places": []
+  },
+  {
+   "id": "map_de",
+   "title": "Karte Deutschland",
+   "desc": "Jede Straße, jeder Weg, Gebäude, Orte und Berge",
+   "bbox": [
+    5.86,
+    47.27,
+    15.04,
+    55.06
+   ],
+   "gb": 7.2,
+   "p": "M",
+   "places": [
+    "DE"
+   ]
+  },
+  {
+   "id": "map_dach",
+   "title": "Karte Deutschland, Österreich, Schweiz",
+   "desc": "Alles bis zur Hausnummer, für die drei Länder",
+   "bbox": [
+    5.86,
+    45.81,
+    17.17,
+    55.06
+   ],
+   "gb": 10,
+   "p": "L",
+   "places": [
+    "DE",
+    "AT",
+    "CH"
+   ],
+   "replaces": [
+    "map_de"
+   ]
+  },
+  {
+   "id": "map_europe",
+   "title": "Karte Europa",
+   "desc": "Ganz Europa bis zur Straße",
+   "bbox": [
+    -25,
+    34,
+    45,
+    72
+   ],
+   "gb": 49,
+   "p": "X",
+   "places": [
+    "DE",
+    "AT",
+    "CH"
+   ],
+   "replaces": [
+    "map_de",
+    "map_dach"
+   ]
+  }
+ ]
+}

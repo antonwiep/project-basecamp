@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <title>Basecamp</title>
+  <link rel="icon" href="/static/icon.svg">
+  <link rel="apple-touch-icon" href="/static/icon.svg">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <a class="brand" href="#/" title="Basecamp"><span class="logo" data-logo></span><span>Basecamp</span></a>
+        <button class="icon-btn" id="sbClose" title="Seitenleiste einklappen" data-icon="sidebar"></button>
+      </div>
+      <nav class="sb-nav">
+        <a class="sb-link" href="#/" id="newChat" title="Neuer Chat"><i data-icon="edit"></i><span>Neuer Chat</span><kbd>⇧⌘O</kbd></a>
+        <button class="sb-link" id="openSearch" title="Wissen durchsuchen (⌘K)"><i data-icon="search"></i><span>Wissen durchsuchen</span><kbd>⌘K</kbd></button>
+        <a class="sb-link" href="#/library" data-nav="library" title="Bibliothek"><i data-icon="library"></i><span>Bibliothek</span></a>
+        <a class="sb-link" href="#/map" data-nav="map" title="Karten"><i data-icon="map"></i><span>Karten</span></a>
+        <a class="sb-link" href="#/code" data-nav="code" title="Code"><i data-icon="terminal"></i><span>Code</span></a>
+      </nav>
+      <div class="sb-chats" id="chatList"></div>
+      <div class="sb-foot">
+        <a class="sb-dl" id="dlStatus" href="#/settings?tab=content" hidden></a>
+        <div class="sb-foot-row">
+          <a class="sb-link" href="#/settings" data-nav="settings" title="Einstellungen"><i data-icon="settings"></i><span>Einstellungen</span></a>
+          <button class="icon-btn" id="sbExpand" title="Seitenleiste ausklappen" data-icon="sidebar"></button>
+        </div>
+      </div>
+    </aside>
+    <div class="scrim" id="scrim"></div>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn" id="sbOpen" title="Seitenleiste öffnen" data-icon="sidebar"></button>
+        <a class="icon-btn only-collapsed" href="#/" title="Neuer Chat" data-icon="edit"></a>
+        <div class="topbar-slot" id="topLeft"></div>
+        <span class="spacer"></span>
+        <div class="topbar-slot" id="topRight"></div>
+      </header>
+      <div class="view" id="view"></div>
+    </main>
+
+    <aside class="panel" id="panel" hidden>
+      <div class="panel-grip" id="panelGrip"></div>
+      <div class="panel-head">
+        <button class="icon-btn" id="panelBack" title="Zurück" data-icon="arrowLeft" hidden></button>
+        <span class="src-ico" id="panelIco"></span>
+        <div class="panel-title"><b id="panelTitle"></b><span id="panelSource"></span></div>
+        <button class="icon-btn" id="panelAsk" title="Zu diesem Artikel fragen" data-icon="sparkle"></button>
+        <a class="icon-btn" id="panelFull" title="Groß öffnen" data-icon="expand"></a>
+        <button class="icon-btn" id="panelClose" title="Schließen" data-icon="x"></button>
+      </div>
+      <iframe id="panelFrame" title="Artikel"></iframe>
+    </aside>
+  </div>
+
+  <div class="palette-wrap" id="palette" hidden>
+    <div class="palette" role="dialog" aria-label="Wissen durchsuchen">
+      <div class="pal-input"><i data-icon="search"></i><button class="pal-scope" id="palScope" title="Nur in dieser Quelle suchen. Klicken zum Entfernen." hidden></button><input id="palInput" placeholder="Wikipedia, iFixit, Orte … durchsuchen" autocomplete="off" spellcheck="false"><kbd>esc</kbd></div>
+      <div class="pal-results" id="palResults"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

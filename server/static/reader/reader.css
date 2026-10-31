@@ -1,0 +1,65 @@
+/* Basecamp reader: light touches on top of each page's own style. */
+html.bc { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; scroll-padding-top: 16px; }
+
+/* night mode for pages that have none: invert, then turn pictures back */
+html.bc-invert { background: #121212 !important; }
+html.bc-invert body { filter: invert(.92) hue-rotate(180deg); background: #fff; min-height: 100vh; }
+html.bc-invert body :is(img, video, picture, canvas, iframe, object, embed) { filter: invert(1) hue-rotate(180deg); }
+
+/* text size for pages that are not Wikipedia (Wikipedia has its own classes for this) */
+html.bc:not(.bc-wiki)[data-bc-size="0"] body { zoom: .9; }
+html.bc:not(.bc-wiki)[data-bc-size="2"] body { zoom: 1.15; }
+
+/* Wikipedia: room to breathe, like on wikipedia.org */
+html.bc-wiki body { background: var(--background-color-base, #fff); }
+html.bc-wiki .mw-page-container { padding-left: 32px; padding-right: 32px; }
+html.bc-wiki .mw-body-header { padding-top: 20px; }
+html.bc-wiki .mw-body { padding-bottom: 64px; }
+html.bc-wiki .mw-parser-output > section > p:first-of-type, html.bc-wiki .mw-parser-output p { hyphens: auto; }
+
+/* ---------------------------------------------------------------- contents sidebar */
+.bc-toc {
+  --toc-text: #202122; --toc-link: #3366cc; --toc-muted: #54595d; --toc-line: #eaecf0;
+  display: none;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .bc-toc { --toc-text: #eaecf0; --toc-link: #88a3e8; --toc-muted: #a2a9b1; --toc-line: #27292d; }
+}
+@media (min-width: 1180px) {
+  html.bc-has-toc body { margin-left: 264px !important; }
+  html.bc-has-toc .bc-toc {
+    display: block; position: fixed; top: 0; left: 0; bottom: 0; width: 264px; overflow-y: auto; z-index: 20;
+    padding: 30px 16px 48px 28px; scrollbar-width: thin; border-right: 1px solid var(--toc-line);
+  }
+}
+.bc-toc-title { font-weight: 700; color: var(--toc-text); padding: 0 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--toc-line); }
+.bc-toc a { display: block; padding: 4px 0; color: var(--toc-link); text-decoration: none; }
+.bc-toc a:hover { text-decoration: underline; }
+.bc-toc a.l3 { padding-left: 14px; font-size: 13.5px; }
+.bc-toc a.on { color: var(--toc-text); font-weight: 700; }
+
+/* ---------------------------------------------------------------- link preview card */
+.bc-card {
+  --card-bg: #ffffff; --card-text: #202122; --card-muted: #54595d; --card-line: rgba(0, 0, 0, .1); --card-link: #3366cc;
+  position: fixed; z-index: 1000; overflow: hidden; cursor: pointer;
+  background: var(--card-bg); color: var(--card-text);
+  border: 1px solid var(--card-line); border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18), 0 2px 6px rgba(0, 0, 0, .08);
+  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  opacity: 0; transform: translateY(4px); transition: opacity .16s ease, transform .16s ease;
+}
+.bc-card.in { opacity: 1; transform: none; }
+@media (prefers-color-scheme: dark) {
+  .bc-card { --card-bg: #17181b; --card-text: #eaecf0; --card-muted: #a2a9b1; --card-line: rgba(255, 255, 255, .1); --card-link: #88a3e8;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .04); }
+}
+.bc-card-img { height: 170px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+@media (prefers-color-scheme: dark) { .bc-card-img { background: #fff; } }
+.bc-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.bc-card-body { padding: 14px 16px 14px; }
+.bc-card b { display: block; font: 600 17px/1.25 "Linux Libertine", Georgia, "Times New Roman", serif; margin-bottom: 6px; }
+.bc-card p { margin: 0; color: var(--card-text); }
+.bc-card-more { display: inline-block; margin-top: 8px; color: var(--card-link); font-size: 13px; }

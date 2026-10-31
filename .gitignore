@@ -1,0 +1,9 @@
+.venv/
+.run/
+config.json
+data/
+dist/
+runtime/
+__pycache__/
+*.pyc
+.DS_Store
