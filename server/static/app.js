@@ -229,7 +229,7 @@ function closeMenus() {
   $$('.menu').forEach(m => m.remove());
 }
 document.addEventListener('mousedown', e => {
-  if (!e.target.closest('.menu, .picker-btn')) closeMenus();
+  if (!e.target.closest('.menu, .picker-btn, .opts-btn')) closeMenus();
 });
 
 /* ---------------------------------------------------------------- chat history */
@@ -817,6 +817,47 @@ async function mountModelPicker(code = false) {
   };
 }
 
+// Composer options live behind one button, so the bar stays calm.
+// A dot on the button shows that something differs from its default,
+// unless the option already shows itself in the bar (`shown`).
+const thinkOption = key => ({ key, def: true, icon: 'bulb', title: 'Nachdenken', desc: 'Besser, aber langsamer' });
+
+function composerOptions(slot, options, onChange) {
+  slot.innerHTML = `<button type="button" class="tool round opts-btn" title="Optionen" aria-label="Optionen" aria-haspopup="true">${ic('settings', 17)}</button>`;
+  const btn = $('.opts-btn', slot);
+  const find = key => options.find(o => o.key === key);
+  const stored = o => store.get(o.key, o.def);
+  const refresh = () => {
+    btn.hidden = options.every(o => o.hidden);
+    btn.classList.toggle('changed', options.some(o => !o.hidden && !o.shown && stored(o) !== o.def));
+    onChange?.();
+  };
+  btn.onclick = () => {
+    if ($('.menu', slot)) return closeMenus();
+    closeMenus();
+    const menu = document.createElement('div');
+    menu.className = 'menu up opts-menu';
+    menu.innerHTML = options.filter(o => !o.hidden).map(o => `
+      <button type="button" class="menu-item" role="switch" aria-checked="${stored(o)}" data-opt="${o.key}">
+        ${ic(o.icon, 17)}
+        <div class="grow"><b>${o.title}</b><small>${o.desc}</small></div>
+        <span class="switch"></span></button>`).join('');
+    slot.appendChild(menu);
+    $$('[data-opt]', menu).forEach(b => (b.onclick = () => {
+      const o = find(b.dataset.opt);
+      store.set(o.key, !stored(o));
+      b.setAttribute('aria-checked', stored(o));
+      refresh();
+    }));
+  };
+  refresh();
+  return {
+    on: key => !find(key).hidden && stored(find(key)),
+    hide(key, hidden) { find(key).hidden = hidden; refresh(); },
+    refresh,
+  };
+}
+
 function createChat(saved) {
   const chat = saved
     ? { ...saved, messages: saved.messages.map(m => ({ ...m })) }
@@ -831,8 +872,7 @@ function createChat(saved) {
         <textarea rows="1" placeholder="Was willst du wissen?" aria-label="Nachricht"></textarea>
         <div class="cbar">
           <button type="button" class="tool round" data-a="attach" title="Bild anhängen">${ic('clip', 17)}</button>
-          <button type="button" class="tool" data-a="kb" title="Antworten mit Quellen aus deiner Bibliothek">${ic('book', 16)}<span>Bibliothek</span></button>
-          <button type="button" class="tool" data-a="think" title="Länger nachdenken: besser, aber langsamer">${ic('bulb', 16)}<span>Nachdenken</span></button>
+          <div class="picker opts-slot"></div>
           <span class="spacer"></span>
           <div class="picker model-slot"></div>
           <button class="send" type="submit" disabled title="Senden">${ic('arrowUp', 18, 2.2)}</button>
@@ -850,21 +890,18 @@ function createChat(saved) {
   const sendBtn = $('.send', root);
   const attachments = $('.attachments', root);
   const fileInput = $('input[type=file]', root);
-  const kbBtn = $('[data-a=kb]', root);
-  const thinkBtn = $('[data-a=think]', root);
   let images = [];
   let ctrl = null;
 
-  const setTool = (btn, on) => btn.classList.toggle('on', on);
-  setTool(kbBtn, store.get('kb', true));
-  setTool(thinkBtn, store.get('think', false));
-  kbBtn.onclick = () => { setTool(kbBtn, !kbBtn.classList.contains('on')); store.set('kb', kbBtn.classList.contains('on')); };
-  thinkBtn.onclick = () => { setTool(thinkBtn, !thinkBtn.classList.contains('on')); store.set('think', thinkBtn.classList.contains('on')); };
+  const opts = composerOptions($('.opts-slot', root), [
+    { key: 'kb', def: true, icon: 'book', title: 'Bibliothek', desc: 'Antworten mit Quellen aus deiner Bibliothek' },
+    thinkOption('think'),
+  ]);
   $('[data-a=attach]', root).onclick = () => fileInput.click();
 
   function applyCaps() {
     const caps = chatModels().find(m => m.name === currentModel())?.caps || [];
-    thinkBtn.hidden = !caps.includes('thinking');
+    opts.hide('think', !caps.includes('thinking'));
     $('[data-a=attach]', root).hidden = !caps.includes('vision');
   }
 
@@ -916,8 +953,7 @@ function createChat(saved) {
       else images.splice(+b.dataset.x, 1);
       renderAttachments();
     }));
-    kbBtn.style.opacity = art ? '.45' : '';
-    kbBtn.title = art ? 'Aus: es wird nur der angehängte Artikel genutzt' : 'Antworten mit Quellen aus deiner Bibliothek';
+    opts.hide('kb', !!art); // with an article attached only that article is used
   }
 
   function attachArticle(a) {
@@ -1061,7 +1097,7 @@ function createChat(saved) {
     chat.messages.push(user);
     renderEmpty();
     inner.appendChild(userEl(user));
-    const mode = chat.article ? 'article' : kbBtn.classList.contains('on') && state.books.length ? 'knowledge' : 'plain';
+    const mode = chat.article ? 'article' : opts.on('kb') && state.books.length ? 'knowledge' : 'plain';
     const bot = { role: 'assistant', content: '', thinking: '', sources: [], status: 'Einen Moment …', statusSince: Date.now(), mode };
     chat.messages.push(bot);
     inner.appendChild(botEl(bot));
@@ -1080,7 +1116,7 @@ function createChat(saved) {
       model,
       mode,
       article: chat.article ? { book: chat.article.book, path: chat.article.path } : null,
-      think: thinkBtn.classList.contains('on') && !thinkBtn.hidden,
+      think: opts.on('think'),
       messages: chat.messages.slice(0, -1).map(m => ({
         role: m.role,
         content: m.content,
@@ -1822,14 +1858,14 @@ function createCodeChat(saved) {
       <form class="composer">
         <textarea rows="1" placeholder="Was sollen wir bauen?" aria-label="Aufgabe"></textarea>
         <div class="cbar">
-          <button type="button" class="tool" data-a="auto" title="Befehle ohne Nachfragen ausführen">${ic('play', 15)}<span>Automatisch</span></button>
-          <button type="button" class="tool" data-a="think" title="Länger nachdenken: besser, aber langsamer">${ic('bulb', 16)}<span>Nachdenken</span></button>
+          <div class="picker opts-slot"></div>
+          <button type="button" class="pill amber auto-pill" hidden title="Automatisch ausschalten">${ic('play', 13)}<span>Automatisch</span>${ic('x', 12, 2.2)}</button>
           <span class="spacer"></span>
           <div class="picker model-slot"></div>
           <button class="send" type="submit" disabled title="Senden">${ic('arrowUp', 18, 2.2)}</button>
         </div>
       </form>
-      <div class="disclaimer">Dateien bleiben im Arbeitsordner. Befehle laufen erst nach deiner Freigabe.</div>
+      <div class="disclaimer"></div>
     </div>
     <div class="starters"></div>`;
   const inner = $('.thread-inner', root);
@@ -1837,25 +1873,26 @@ function createCodeChat(saved) {
   const ta = $('textarea', root);
   const form = $('form', root);
   const sendBtn = $('.send', root);
-  const autoBtn = $('[data-a=auto]', root);
-  const thinkBtn = $('[data-a=think]', root);
+  const autoPill = $('.auto-pill', root);
+  const disclaimer = $('.disclaimer', root);
   let ctrl = null;
   let stopped = false;
   let pendingResolve = null;
 
-  const toggle = (btn, key) => {
-    btn.classList.toggle('on', store.get(key, false));
-    btn.onclick = () => {
-      store.set(key, !store.get(key, false));
-      btn.classList.toggle('on', store.get(key, false));
-    };
-  };
-  toggle(autoBtn, 'codeAuto');
-  toggle(thinkBtn, 'codeThink');
+  // this option sits in a menu, so when commands run without asking it has to show here
+  const opts = composerOptions($('.opts-slot', root), [
+    { key: 'codeAuto', def: false, shown: true, icon: 'play', title: 'Automatisch', desc: 'Befehle ohne Nachfragen ausführen' },
+    thinkOption('codeThink'),
+  ], () => {
+    const auto = store.get('codeAuto', false);
+    autoPill.hidden = !auto;
+    disclaimer.textContent = `Dateien bleiben im Arbeitsordner. ${auto ? 'Befehle laufen ohne Nachfrage.' : 'Befehle laufen erst nach deiner Freigabe.'}`;
+  });
+  autoPill.onclick = () => { store.set('codeAuto', false); opts.refresh(); };
 
   function applyCaps() {
     const caps = chatModels(true).find(m => m.name === currentModel(true))?.caps || [];
-    thinkBtn.hidden = !caps.includes('thinking');
+    opts.hide('codeThink', !caps.includes('thinking'));
   }
 
   let running = false; // the whole agent loop, including tool calls
@@ -2123,7 +2160,7 @@ function createCodeChat(saved) {
       };
       try {
         await streamNdjson('/api/code/chat', {
-          model, cwd: chat.cwd, think: !thinkBtn.hidden && thinkBtn.classList.contains('on'), messages: apiMessages(),
+          model, cwd: chat.cwd, think: opts.on('codeThink'), messages: apiMessages(),
         }, ctrl.signal, ev => {
           if (ev.t === 'think') { if (!t0) t0 = step.thinkStart = Date.now(); step.thinking += ev.c; }
           else if (ev.t === 'status') { step.status = ev.c; step.statusLoad = !!ev.load; step.statusSince = Date.now(); }
