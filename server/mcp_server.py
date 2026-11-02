@@ -104,7 +104,7 @@ def not_installed(source):
     if not missing:
         return f"No source called '{source}'. list_sources shows what there is."
     gb = app.ITEMS[missing[0]]["gb"]
-    size = f"{gb:g} GB" if gb >= 1 else f"{gb * 1000:.0f} MB"
+    size = f"{gb:g} GB" if gb >= 1 else f"{max(1, round(gb * 1000))} MB"
     return (f"'{source}' is not downloaded yet. The user can get it with: "
             f"{app.ROOT}/basecamp download {missing[0]} ({size}, needs internet)")
 
