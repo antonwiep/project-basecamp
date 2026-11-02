@@ -149,11 +149,16 @@ const ICONS = {
   type: '<path d="M4 7V5h11v2"/><path d="M9.5 5v14"/><path d="M7.5 19h4"/><path d="M14 13v-1.5h6V13"/><path d="M17 11.5V19"/><path d="M15.8 19h2.4"/>',
   brain: '<path d="M12 5a3 3 0 1 0-6 .1 4 4 0 0 0-2.5 5.8 4 4 0 0 0 .6 6.6A4 4 0 1 0 12 18z"/><path d="M12 5a3 3 0 1 1 6 .1 4 4 0 0 1 2.5 5.8 4 4 0 0 1-.6 6.6A4 4 0 1 1 12 18z"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  lifebuoy: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 3.6 3.6M14.8 14.8l3.6 3.6M18.4 5.6l-3.6 3.6M9.2 14.8l-3.6 3.6"/>',
+  phone: '<path d="M21 16.5v3a2 2 0 0 1-2.2 2A18 18 0 0 1 2.5 5.2 2 2 0 0 1 4.5 3h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.5 10.8a15 15 0 0 0 4.7 4.7l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  printer: '<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>',
+  wave: '<path d="M2 8c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/><path d="M2 15c2.5 0 2.5 2 5 2s2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/>',
+  alert: '<path d="M12 3.5 22 21H2z"/><path d="M12 10v5"/><path d="M12 18h.01" stroke-width="2.6"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/>',
 };
 const LOGO = (size = 22) =>
   `<svg class="i" width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2.5 22.5 21h-21Z M12 11l4.6 10H7.4Z"/><circle cx="18.5" cy="5.5" r="1.6"/></svg>`;
-const wordmark = tag => `<div class="wordmark">${LOGO(50)}<span>Basecamp</span>${tag ? `<em class="tag">${tag}</em>` : ''}</div>`;
+const wordmark = () => `<div class="wordmark">${LOGO(50)}<span>Basecamp</span></div>`;
 const ic = (name, size = 18, sw = 1.8) =>
   `<svg class="i" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
 
@@ -180,6 +185,8 @@ const state = {
   view: '',
   chat: null, // current chat controller
   projects: null, // null: not available here, e.g. on a phone in the WLAN
+  power: null,
+  warn: null,
 };
 const live = new Map(); // chat id -> controller, while an answer streams
 const deleted = new Set(); // chats removed while they were still streaming
@@ -322,7 +329,11 @@ function renderChatList() {
 
 /* ================================================================ router */
 
+let leaveNotfall = null; // saves the emergency form when the user moves on
+
 function route() {
+  const saving = leaveNotfall?.();
+  leaveNotfall = null;
   const hash = location.hash.slice(1) || '/';
   const [path, query = ''] = hash.split('?');
   const params = new URLSearchParams(query);
@@ -341,7 +352,9 @@ function route() {
   renderChatList();
   if (innerWidth <= 900) setSidebar(false);
   if (page === 'read') return showReader(decodeURIComponent(parts[1] || ''), parts.slice(2).map(decodeURIComponent).join('/'));
+  renderPower();
   if (page === 'library') return showLibrary();
+  if (page === 'notfall') return showNotfall(params.get('edit'), params.get('flow') === '1', saving);
   if (page === 'projects') return showProjects();
   if (page === 'p') return showProject(parts[1]);
   if (page === 'map') return showMap(params);
@@ -489,6 +502,7 @@ function showReader(book, path) {
   const frame = $('#readerFrame');
   const setCrumb = (title, bk) => {
     const bb = bookById(bk) || b;
+    if ((readerNav?.page?.path ?? path) === bb?.main) title = 'Startseite';
     $('#topLeft').innerHTML = `
       <button class="icon-btn" id="rBack" title="Zurück" ${readerNav?.canGo(-1) ? '' : 'disabled'}>${ic('arrowLeft')}</button>
       <button class="icon-btn" id="rFwd" title="Vor" ${readerNav?.canGo(1) ? '' : 'disabled'}>${ic('arrowRight')}</button>
@@ -934,10 +948,12 @@ function createChat(saved, project = null) {
     const caps = chatModels().find(m => m.name === currentModel())?.caps || [];
     opts.hide('think', !caps.includes('thinking'));
     $('[data-a=attach]', root).hidden = !caps.includes('vision');
+    autosize();
+    if (!chat.messages.length) renderEmpty();
   }
 
   // ---- composer
-  const canSend = () => (ta.value.trim().length > 0 || ctrl) && !!currentModel();
+  const canSend = () => !!ctrl || (ta.value.trim().length > 0 && !!currentModel() && !state.power?.on);
   const autosize = () => {
     sendBtn.disabled = !canSend();
     if (!ta.isConnected) return; // not mounted yet, height would be 0
@@ -955,7 +971,7 @@ function createChat(saved, project = null) {
     e.preventDefault();
     if (ctrl) return ctrl.abort();
     const text = ta.value.trim();
-    if (!text) return;
+    if (!text || state.power?.on) return;
     ta.value = '';
     autosize();
     send(text);
@@ -995,27 +1011,35 @@ function createChat(saved, project = null) {
   }
 
   // ---- rendering
+  let heroKey = null; // drawn once per state: drawing it again would replay the animation
   function renderEmpty() {
     const empty = !chat.messages.length;
     root.classList.toggle('empty', empty);
     const starters = $('.starters', root);
     if (!empty) {
       starters.innerHTML = '';
+      heroKey = null;
       return;
     }
     const st = state.status;
+    const aiOff = !!st && !st.ollama;
+    const noBooks = !state.books.length;
+    const noModel = !aiOff && !!state.models && !currentModel();
+    const key = [noBooks, noModel, aiOff, !!state.projects, state.books.length].join();
+    if (key === heroKey && $('.hero', inner)) return;
+    heroKey = key;
     const total = state.books.reduce((n, b) => n + b.articles, 0);
-    const warn = !state.books.length
-      ? `<p>Noch keine Inhalte. <a href="#/settings?tab=content" style="text-decoration:underline">Wissen laden</a></p>`
-      : st && !st.ollama
+    const todo = [
+      noBooks && `<a class="btn primary" href="#/settings?tab=content">Wissen laden</a>`,
+      noModel && `<a class="btn ${noBooks ? '' : 'primary'}" href="#/settings?tab=models">KI-Modell laden</a>`,
+    ].filter(Boolean).join('');
+    const note = todo
+      ? `<p>${noBooks && noModel ? 'Zum Start fehlen noch zwei Dinge.' : noBooks ? 'Noch keine Inhalte. Einmal laden, danach geht alles ohne Internet.' : 'Noch kein KI-Modell. Suchen und Lesen gehen schon.'}</p><div class="hero-todo">${todo}</div>`
+      : aiOff
         ? '<p>Die KI ist aus. Starte sie mit <code class="path">./basecamp start</code>. Suchen geht trotzdem mit ⌘K.</p>'
         : `<p>${state.books.length} Quellen · ${fmtNum(total)} Artikel · alles offline</p>`;
-    inner.innerHTML = `<div class="hero">${wordmark()}${warn}</div>`;
-    const top = ['wikipedia_de_all_maxi', 'wikipedia_de_all_nopic', 'wikipedia_de_all_mini', 'wikipedia_en_medicine_maxi', 'ifixit_de_all']
-      .map(bookById).filter(Boolean).slice(0, 3);
-    starters.innerHTML =
-      STARTERS.slice(0, state.books.length ? 3 : 4).map(s => `<button class="starter" data-q="${esc(s)}">${esc(s)}</button>`).join('') +
-      top.map(b => `<a class="starter" href="${readHref(b.id, b.main)}">${srcIco(b.id, b.title)}${esc(b.title)}</a>`).join('');
+    inner.innerHTML = `<div class="hero">${wordmark()}${note}${modeSwitch('chat')}</div>`;
+    starters.innerHTML = noModel || aiOff ? '' : STARTERS.slice(0, 3).map(q => `<button class="starter" data-q="${esc(q)}">${esc(q)}</button>`).join('');
     $$('[data-q]', starters).forEach(b => (b.onclick = () => send(b.dataset.q)));
   }
 
@@ -1546,6 +1570,658 @@ function renderMemorySettings(el) {
   return mountMemory($('#memBox', el), null);
 }
 
+/* ================================================================ power saving */
+
+function batteryIcon(b, size = 18) {
+  const fill = Math.max(1, Math.round((b.percent / 100) * 13));
+  return `<svg class="i" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="2" y="7" width="17" height="10" rx="2.5"/><path d="M22 11v2"/><rect x="4" y="9" width="${fill}" height="6" rx="1" fill="currentColor" stroke="none"/></svg>`;
+}
+
+async function loadPower() {
+  const p = await api.get('power').catch(() => null);
+  if (p && !p.error) state.power = p;
+  renderPower();
+}
+
+function renderPower() {
+  const p = state.power;
+  const b = p?.battery;
+  const btn = $('#powerBtn');
+  btn.hidden = !state.projects || !p || (!b && !p.on);
+  if (!btn.hidden) {
+    const left = b?.minutes_left ? `, noch ${Math.floor(b.minutes_left / 60)}:${String(b.minutes_left % 60).padStart(2, '0')} h` : '';
+    const level = b ? `Akku ${b.percent} %${b.charging ? ', lädt' : left}. ` : '';
+    btn.innerHTML = `${b ? batteryIcon(b, 16) : ic('bulb', 16)}${b ? `<span>${b.percent} %</span>` : ''}`;
+    btn.classList.toggle('on', p.on);
+    btn.classList.toggle('low', !!b && b.on_battery && b.percent <= 20);
+    btn.title = level + (p.on ? 'Stromsparen ist an. Klicken schaltet die KI wieder ein.' : 'Klicken: Stromsparen, die KI wird entladen und nur das Wissen läuft.');
+    btn.setAttribute('aria-label', btn.title);
+  }
+  $('#powerBar').hidden = !p?.on || !['', 'c', 'code', 'p'].includes(state.view);
+  $('#powerOff').hidden = !state.projects;
+  state.chat?.applyCaps?.();
+}
+
+// Chat and Code are the same kind of thing: a box to write in. So they share one place to start.
+const modeSwitch = mode => (state.projects
+  ? `<div class="seg mode-seg"><a href="#/" class="${mode === 'chat' ? 'on' : ''}">Chat</a><a href="#/code" class="${mode === 'code' ? 'on' : ''}">Code</a></div>`
+  : '');
+
+async function setPowerSave(on) {
+  const p = await api.post('power', { on }).catch(() => null);
+  if (!p || p.error) return toast('Das hat nicht geklappt.');
+  state.power = p;
+  renderPower();
+  toast(on ? 'Stromsparen an: Die KI ist entladen.' : 'Die KI ist wieder an.');
+}
+$('#powerBtn').onclick = () => setPowerSave(!state.power?.on);
+$('#powerOff').onclick = () => setPowerSave(false);
+
+/* ================================================================ emergency: warnings */
+
+const WARN_STALE_SECS = 3600;
+// wording of the Bavarian flood service, shortened
+const STAGE_TEXT = {
+  1: 'Stellenweise kleine Ausuferungen',
+  2: 'Felder und Wälder überflutet oder leichte Verkehrsbehinderungen',
+  3: 'Einzelne Grundstücke oder Keller überflutet, Sperrungen',
+  4: 'Bebaute Gebiete in größerem Umfang überflutet',
+};
+const SEVERITY = {
+  Extreme: ['Extreme Gefahr', 'high'],
+  Severe: ['Gefahr', 'high'],
+  Moderate: ['Warnung', 'mid'],
+  Minor: ['Hinweis', 'low'],
+};
+
+const fmtAge = secs => {
+  if (secs < 90) return 'gerade eben';
+  if (secs < 3600) return `vor ${Math.round(secs / 60)} Min.`;
+  if (secs < 172800) return `vor ${Math.round(secs / 3600)} Std.`;
+  return `vor ${Math.round(secs / 86400)} Tagen`;
+};
+
+async function loadWarnings() {
+  const w = await api.get('warnings').catch(() => null);
+  if (!w || w.error) return;
+  state.warn = w;
+  const alert = w.warnings.some(x => x.severity !== 'Minor') || w.gauges.some(g => g.stage >= 1);
+  $('#notfallDot').hidden = !alert;
+  // Also when nothing new came in: offline the age must keep counting, or an old state looks current.
+  const box = $('#warnBox');
+  if (box && !$('.warn-setup', box)) renderWarnings(box);
+}
+
+// "All clear" only counts while the data is fresh. An old state must never read as safe.
+function freshness(at, error, now) {
+  const age = now - at;
+  if (!at) return { stale: true, text: error ? `Noch kein Stand: ${error}` : 'Wird abgerufen …' };
+  if (age > WARN_STALE_SECS) return { stale: true, text: `Stand ${fmtAge(age)}${error ? ` (${error})` : ''}. Kann veraltet sein.` };
+  return { stale: false, text: `Stand ${fmtAge(age)}${error ? ` (letzter Versuch: ${error})` : ''}` };
+}
+
+function warningCard(w) {
+  const [label, level] = SEVERITY[w.severity] || ['Warnung', 'mid'];
+  const details = [w.text && `<p>${esc(w.text)}</p>`, w.area && `<p class="faint sm">${esc(w.area)}</p>`].filter(Boolean).join('');
+  return `<div class="warn-card ${level}">
+    <div class="warn-head">${ic('alert', 18)}<div class="grow"><b>${esc(w.title || label)}</b><small>${label} · ${esc(w.source)}</small></div></div>
+    ${w.instruction ? `<div class="warn-do"><b>Was tun</b><p>${esc(w.instruction)}</p></div>` : ''}
+    ${details ? `<details class="warn-more" data-key="${esc(w.id)}"><summary>Details</summary>${details}</details>` : ''}
+  </div>`;
+}
+
+function gaugeGroups(gauges) {
+  const rivers = [];
+  for (const g of gauges) {
+    let r = rivers.find(x => x.name === g.river);
+    if (!r) rivers.push((r = { name: g.river, gauges: [] }));
+    r.gauges.push(g);
+  }
+  return rivers;
+}
+
+function gaugeRow(g) {
+  const stage = g.stage ?? -1;
+  const state = g.level === null ? 'Keine aktuellen Daten' : g.stage === null ? 'Ohne Meldestufe' : stage === 0 ? 'Unter Meldestufe 1' : `Meldestufe ${stage}`;
+  return `<div class="row gauge ${stage >= 3 ? 'high' : stage >= 1 ? 'mid' : ''}">
+    <div class="grow"><b>${esc(g.name)}</b><small>${[STAGE_TEXT[stage], g.level === null ? '' : g.at].filter(Boolean).map(esc).join(' · ')}</small></div>
+    <div class="gauge-val"><b>${g.level === null ? '–' : `${g.level} cm`}</b><small>${state}</small></div></div>`;
+}
+
+function renderGauges(w, stale) {
+  if (!w.gauges.length) return '';
+  const groups = gaugeGroups(w.gauges).sort((a, b) => Math.max(...b.gauges.map(g => g.stage || 0)) - Math.max(...a.gauges.map(g => g.stage || 0)));
+  return groups.map(r => {
+    const top = Math.max(...r.gauges.map(g => g.stage || 0));
+    const n = r.gauges.length;
+    const live = r.gauges.filter(g => g.level !== null).length;
+    const sum = top >= 1 ? `Bis Meldestufe ${top}`
+      : !live ? 'Keine aktuellen Daten'
+      : `${live === n ? `${n} Pegel` : `${live} von ${n} Pegeln melden`}, ${stale ? 'beim letzten Abruf ' : ''}keine Meldestufe gemeldet`;
+    return `<details class="gauges" data-key="${esc(r.name)}" ${top >= 1 || n <= 4 ? 'open' : ''}><summary>${ic('wave', 17)}<b>${esc(r.name)}</b><span>${sum}</span>${ic('chevDown', 15)}</summary>
+      <div class="group">${r.gauges.map(gaugeRow).join('')}</div></details>`;
+  }).join('');
+}
+
+function renderWarningOffer(el) {
+  el.innerHTML = `<div class="group"><div class="row"><div class="grow"><b>Warnungen für eure Gegend</b><small>NINA, Wetter und Hochwasser. Der letzte Stand bleibt auch offline lesbar.</small></div>
+    <button type="button" class="btn" id="warnStart">Einschalten</button></div></div>`;
+  $('#warnStart', el).onclick = () => renderWarningSetup(el, state.warn);
+}
+
+function renderWarningSetup(el, w) {
+  const configured = !!(w.regions.length || w.flood);
+  const regions = [...w.regions];
+  let flood = w.flood;
+  let floodChosen = configured;
+  const inFloodArea = () => regions.some(r => w.flood_regions.some(prefix => r.id.startsWith(prefix)));
+  const paint = () => {
+    if (!floodChosen) flood = inFloodArea(); // on by itself where these rivers matter
+    el.innerHTML = `<div class="group warn-setup">
+      <div class="row region-row"><div class="grow"><b>Dein Kreis oder deine Stadt</b><small>Du kannst mehrere wählen, zum Beispiel Stadt und Landkreis.</small>
+        <div class="region-chips">${regions.map((r, i) => `<span class="chip">${esc(r.name)}<button type="button" data-remove="${i}" title="Entfernen">${ic('x', 13)}</button></span>`).join('')}</div>
+        <div class="region-search"><div class="ms-input">${ic('search', 16)}<input placeholder="Zum Beispiel Bamberg" aria-label="Kreis oder Stadt suchen" autocomplete="off"></div><div class="region-hits"></div></div></div></div>
+      ${inFloodArea() || flood ? `<div class="row"><div class="grow"><b>Hochwasser an ${esc(w.flood_rivers.join(' und '))}</b><small>Warnungen und Pegel</small></div>
+        <button type="button" class="switch-row" role="switch" aria-checked="${flood}" aria-label="Hochwasser" id="floodSwitch"><span class="switch"></span></button></div>` : ''}
+      <div class="row warn-setup-foot"><div class="grow"><small>Fragt alle 15 Minuten warnung.bund.de und hnd.bayern.de und sendet nur den Kreis. Basecamp meldet sich nicht von selbst und ersetzt nicht die NINA-App.</small></div>
+        <button type="button" class="btn ghost" id="warnCancel">Abbrechen</button>
+        <button type="button" class="btn primary" id="warnSave" ${!configured && !regions.length && !flood ? 'disabled' : ''}>${configured ? 'Speichern' : 'Einschalten'}</button></div>
+    </div>`;
+    $$('[data-remove]', el).forEach(b => (b.onclick = () => { regions.splice(+b.dataset.remove, 1); paint(); }));
+    if ($('#floodSwitch', el)) $('#floodSwitch', el).onclick = () => { floodChosen = true; flood = !flood; paint(); };
+    $('#warnCancel', el).onclick = () => renderWarnings(el);
+    $('#warnSave', el).onclick = async () => {
+      state.warn = await api.post('warnings/settings', { regions, flood });
+      renderWarnings(el);
+      pollWarningsSoon();
+    };
+    const input = $('.region-search input', el);
+    const hits = $('.region-hits', el);
+    let timer = 0;
+    input.oninput = () => {
+      clearTimeout(timer);
+      const q = input.value.trim();
+      if (q.length < 2) { hits.innerHTML = ''; return; }
+      timer = setTimeout(async () => {
+        const r = await api.get(`warnings/regions?q=${encodeURIComponent(q)}`).catch(() => ({ error: 'Dafür braucht es einmal Internet.' }));
+        if (input.value.trim() !== q) return;
+        if (r.error) { hits.innerHTML = `<p class="faint sm">${esc(r.error)}</p>`; return; }
+        hits.innerHTML = (r.regions || []).length ? r.regions.map(x => `<button type="button" class="menu-item" data-id="${esc(x.id)}" data-name="${esc(x.name)}"><div class="grow"><b>${esc(x.name)}</b></div></button>`).join('') : '<p class="faint sm">Nichts gefunden.</p>';
+        $$('[data-id]', hits).forEach(b => (b.onclick = () => {
+          if (regions.length < 5 && !regions.some(x => x.id === b.dataset.id)) regions.push({ id: b.dataset.id, name: b.dataset.name });
+          paint();
+          $('.region-search input', el).focus();
+        }));
+      }, 200);
+    };
+  };
+  paint();
+}
+
+function renderWarnings(el) {
+  const w = state.warn;
+  if (!el || !w) return;
+  if (!w.regions.length && !w.flood) {
+    if (!state.projects) { el.innerHTML = '<p class="faint sm section-note">Warnungen lassen sich direkt auf dem Mac einrichten.</p>'; return; }
+    return renderWarningOffer(el);
+  }
+  const f = freshness(w.warnings_at, w.warnings_error, w.now);
+  const g = w.flood ? freshness(w.gauges_at, w.gauges_error, w.now) : null;
+  const top = Math.max(0, ...w.gauges.map(x => x.stage || 0));
+  const clear = !w.warnings.length && w.warnings_at && !top;
+  const area = w.regions.map(r => r.name).join(', ') || w.flood_rivers.join(' und ');
+  const head = !w.warnings_at ? f.text
+    : w.warnings.length ? `${w.warnings.length} ${w.warnings.length === 1 ? 'aktive Warnung' : 'aktive Warnungen'} für ${area}`
+    : top ? `Keine amtliche Warnung, aber ein Pegel auf Meldestufe ${top}`
+    : f.stale ? `Beim letzten Abruf keine Warnungen für ${area}` : `Keine aktuellen Warnungen für ${area}`;
+  const open = new Map($$('details[data-key]', el).map(d => [d.dataset.key, d.open]));
+  el.innerHTML = `
+    <div class="warn-status ${f.stale ? 'stale' : clear ? 'clear' : ''}">
+      <i>${ic(f.stale || !clear ? 'alert' : 'check', 18)}</i>
+      <div class="grow"><b>${esc(head)}</b><small>${w.warnings_at ? `${esc(f.text)} · ` : ''}NINA, DWD${w.flood ? ', Hochwasserportal' : ''}</small></div>
+      ${state.projects ? `<button class="btn ghost sm" id="warnRefresh" ${w.checking ? 'disabled' : ''}>${w.checking ? 'Ruft ab …' : 'Aktualisieren'}</button>
+      <button class="icon-btn" id="warnEdit" title="Ändern">${ic('settings', 16)}</button>` : ''}
+    </div>
+    ${w.warnings.map(warningCard).join('')}
+    ${g ? `<div class="group-title warn-gauges">Pegel <span class="${g.stale ? 'warn-stale' : ''}">${esc(g.text)} · Hochwassernachrichtendienst Bayern</span></div>${renderGauges(w, g.stale)}` : ''}`;
+  $$('details[data-key]', el).forEach(d => { if (open.has(d.dataset.key)) d.open = open.get(d.dataset.key); });
+  if ($('#warnRefresh', el)) $('#warnRefresh', el).onclick = async () => {
+    state.warn = await api.post('warnings/refresh');
+    renderWarnings(el);
+    pollWarningsSoon();
+  };
+  if ($('#warnEdit', el)) $('#warnEdit', el).onclick = () => renderWarningSetup(el, w);
+}
+
+// after a request the worker needs a moment: look again a few times
+function pollWarningsSoon() {
+  for (const ms of [1000, 3000, 7000, 15000, 30000]) setTimeout(loadWarnings, ms);
+}
+
+/* ================================================================ emergency: plan */
+
+const EMERGENCY_NUMBERS = [
+  ['112', 'Feuerwehr und Rettungsdienst'],
+  ['110', 'Polizei'],
+  ['116 117', 'Ärztlicher Bereitschaftsdienst'],
+];
+
+// One tap each. What a choice means is written by hand, so it works without a model and invents nothing.
+const HOUSEHOLD_CHOICES = [
+  ['pets', 'Haustiere', 'Haustiere: Leine oder Box, Futter und Impfpass griffbereit legen.'],
+  ['cellar', 'Keller oder Erdgeschoss', 'Keller oder Erdgeschoss: Wichtiges früh nach oben bringen. Bei Hochwasser nicht in den Keller.'],
+  ['water', 'Nah am Wasser', 'Nah am Wasser: Warnungen ernst nehmen und früh gehen, nicht erst, wenn das Wasser da ist.'],
+  ['high', 'Weit oben', 'Weit oben: Vorher klären, wer beim Treppensteigen und Tragen hilft.'],
+  ['gas', 'Gasheizung oder Gasherd', 'Bei Gasgeruch: kein Licht und keine Schalter, Fenster auf, raus, draußen 112 anrufen.'],
+  ['electric', 'Elektroherd', 'Ohne Strom kein Herd: Essen bereithalten, das man nicht kochen muss.'],
+  ['nocar', 'Kein Auto', 'Kein Auto: Früh klären, wer euch mitnimmt, und rechtzeitig aufbrechen.'],
+];
+
+// Written by hand, not by a model, from the advice of the German civil protection office (BBK).
+const PLAN_TEMPLATE = `## Zuerst
+- Ruhe bewahren und die Lage prüfen. Bei Lebensgefahr: 112.
+- Radio einschalten und die Warnungen hier prüfen.
+- Alle im Haushalt informieren.
+- Kontakte kurz melden. Eine SMS kommt oft noch durch, wenn Anrufe nicht gehen.
+- Erreichen wir uns nicht, gehen alle zum Treffpunkt.
+
+## Stromausfall
+- Taschenlampen statt Kerzen nutzen.
+- Kühlschrank und Gefrierschrank geschlossen halten.
+- Empfindliche Geräte ausstecken.
+- Handy sparsam nutzen und Powerbank bereithalten.
+- Nie drinnen mit Grill oder Gasbrenner heizen oder kochen. Kohlenmonoxid ist tödlich.
+
+## Hochwasser und Unwetter
+- Keller und Tiefgaragen nicht betreten. Dort besteht Lebensgefahr.
+- Wichtige Sachen und Medikamente nach oben bringen.
+- Nicht durch Wasser gehen oder fahren.
+- Bei Gewitter drinnen bleiben und Fenster schließen.
+
+## Feuer
+- Alle warnen und sofort raus. Keinen Aufzug nehmen.
+- Türen hinter sich schließen.
+- Draußen 112 anrufen. Nicht zurückgehen.
+
+## Haus verlassen
+- Notgepäck, Dokumentenmappe und Medikamente mitnehmen.
+- Fenster und Türen schließen, Strom und Gas abstellen, wenn das gefahrlos geht.
+- Nachbarn Bescheid sagen, die Hilfe brauchen.
+- Zum Treffpunkt gehen und Kontakte melden.
+
+## Vorrat
+- Essen und Trinken für 10 Tage. 3 Tage sind ein guter Anfang.
+- 2 Liter Trinken pro Person und Tag, also 20 Liter für 10 Tage.
+- Medikamente, Erste-Hilfe-Set, Taschenlampe, Batterien, Radio, Bargeld.
+- Dokumentenmappe griffbereit, Notgepäck fertig gepackt.`;
+
+function householdPlan(s) {
+  const kids = +s.kids || 0;
+  const persons = (+s.adults || 0) + kids;
+  const points = [];
+  if (persons) points.push(`Vorrat für ${persons} ${persons === 1 ? 'Person' : 'Personen'}: ${persons * 20} Liter Trinken für 10 Tage.`);
+  if (s.needs?.trim()) points.push(`Zuerst daran denken: ${s.needs.trim()}. Mit Arzt oder Apotheke klären, was bei Stromausfall zu tun ist.`);
+  if (kids) points.push('Kinder: Treffpunkt und Kontaktnummer üben. Ihre Papiere und etwas zum Beschäftigen ins Notgepäck.');
+  for (const [k, , point] of HOUSEHOLD_CHOICES) if (s[k]) points.push(point);
+  return points;
+}
+
+const fullTemplate = setup => {
+  const points = householdPlan(setup);
+  return points.length ? `${PLAN_TEMPLATE}\n\n## Für unseren Haushalt\n${points.map(x => `- ${x}`).join('\n')}` : PLAN_TEMPLATE;
+};
+
+// There is always a plan. It follows the answers until someone writes their own.
+const currentPlan = d => (d.plan?.trim() ? d.plan : fullTemplate(d.setup || {}));
+
+const hasPersonalData = d => !!(d.contacts?.length || d.people?.length || d.plan?.trim() || Object.values(d.setup || {}).some(Boolean));
+
+// Local models wrote dangerous advice, even with tight rules: insulin in a cellar that floods, gas
+// heaters indoors, breathing in smoke. So a model only adds this one section, and its heading says
+// what it is, on paper too. The code puts the checked template above it, which a model cannot change.
+const AI_HEADING = '## Vorschläge der KI, ungeprüft';
+
+const householdLines = s => [
+  +s.adults ? `- Erwachsene: ${s.adults}` : '',
+  +s.kids ? `- Kinder: ${s.kids}` : '',
+  ...HOUSEHOLD_CHOICES.filter(([k]) => s[k]).map(([, label]) => `- ${label}`),
+  s.needs?.trim() ? `- Besonderes: ${s.needs.trim()}` : '',
+].filter(Boolean);
+
+function planPrompt(setup) {
+  return `Hier ist ein Haushalt in Deutschland:
+
+${householdLines(setup).join('\n') || '- Keine Angaben'}
+
+Er hat schon einen allgemeinen Notfallplan für Stromausfall, Hochwasser, Feuer, Haus verlassen und Vorrat. Schreib eine kurze Liste mit dem, was für genau diesen Haushalt dazukommt.
+
+Regeln:
+- 3 bis 8 Punkte auf Deutsch. Jeder Punkt ist eine kurze Anweisung ohne Anrede und beginnt mit "- ".
+- Jeder Punkt muss direkt aus einer Angabe oben folgen.
+- Nur was der Haushalt bereitlegen oder im Notfall tun soll. Keine Umbauten, keine neue Technik, keine Behörden oder Verträge.
+- Nur vernünftige, allgemein bekannte Ratschläge. Bist du unsicher, lass den Punkt weg.
+- Erfinde keine Telefonnummern, Namen, Adressen oder Orte.
+- Keine Überschriften, keine Einleitung, kein Schluss.`;
+}
+
+// Keeps only plain points, and drops whatever looks like a made-up phone number.
+function cleanPoints(text) {
+  const bullet = /^\s*(?:[-*•]|\d+[.)])\s+/;
+  return text.split('\n').filter(l => bullet.test(l))
+    .map(l => l.replace(bullet, '').replace(/\*\*/g, '').trim())
+    .filter(l => l && !/\d[\d /-]{4,}\d/.test(l))
+    .slice(0, 10)
+    .map(l => `- ${l}`);
+}
+
+const NOTFALL_STEPS = [
+  { key: 'haushalt', title: 'Euer Zuhause', note: 'Tippt an, was stimmt. Daraus wird euer Plan.', mount: mountHousehold },
+  { key: 'treffpunkte', title: 'Wo trefft ihr euch?', note: 'Wenn das Handy nicht geht, weiß trotzdem jeder, wohin.', mount: mountMeetings },
+  { key: 'kontakte', title: 'Wen ruft ihr an?', note: 'Am besten auch jemanden außerhalb der Region.', mount: mountContacts },
+  { key: 'personen', title: 'Was müssen Helfer wissen?', note: 'Medikamente, Allergien, Krankheiten, Hausarzt. Nur wenn es etwas gibt, überspringen ist völlig in Ordnung.', mount: mountPeople },
+];
+
+let notfallRun = 0;
+
+async function showNotfall(edit, flow, saving) {
+  if (panel.book) closePanel();
+  const run = ++notfallRun;
+  await saving;
+  let data = state.projects ? await api.get('emergency').catch(() => null) : {};
+  // A failed read must never open a form: saving it would replace the real plan with an empty one.
+  const local = !!state.projects && !!data && !data.error;
+  if (!local) data = {};
+  await loadWarnings();
+  if (run !== notfallRun || state.view !== 'notfall') return;
+  if (edit && local) return edit === 'plan' ? renderPlanEditor(data) : renderNotfallStep(data, edit, flow);
+  renderNotfallPage(data, local);
+}
+
+function renderNotfallPage(data, local) {
+  const setup = data.setup || {};
+  const contacts = data.contacts || [];
+  const people = data.people || [];
+  const personal = hasPersonalData(data);
+  const change = (step, label = 'Ändern') => (local ? `<a class="sec-change no-print" href="#/notfall?edit=${step}">${label}</a>` : '');
+  const head = (title, links, note = '') => `<div class="sec-head"><div class="group-title">${title}${note ? ` <span>${note}</span>` : ''}</div><div class="sec-links">${links}</div></div>`;
+  const place = (label, value) => (value ? `<div class="row"><div class="grow"><b>${esc(value)}</b><small>${label}</small></div></div>` : '');
+  const open = local && personal ? [
+    !(setup.near || setup.far) && ['treffpunkte', 'Treffpunkte eintragen'],
+    !contacts.length && ['kontakte', 'Kontakte eintragen'],
+    !people.length && ['personen', 'Eintragen, was Helfer wissen müssen'],
+  ].filter(Boolean) : [];
+  view.innerHTML = `<div class="page notfall"><div class="page-inner narrow">
+    <div class="page-head">
+      <div class="grow"><h1>Notfall</h1><p class="print-only">Notfallplan${data.updated ? ` · Stand ${new Date(data.updated * 1000).toLocaleDateString('de-DE')}` : ''}</p></div>
+      ${local ? `<div class="page-acts no-print"><button class="btn" id="eprint">${ic('printer', 15)}Drucken oder PDF</button></div>` : ''}
+    </div>
+    <div class="group numbers">${EMERGENCY_NUMBERS.map(([n, label]) => `<a class="row number" href="tel:${n.replace(/\s/g, '')}">${ic('phone', 18)}<b>${n}</b><span>${label}</span></a>`).join('')}</div>
+    ${setup.home ? `<div class="group">${place('Eure Adresse für den Notruf', setup.home)}</div>` : ''}
+    <div class="no-print"><div class="group-title">Warnungen</div><div id="warnBox"></div></div>
+    ${local && !personal ? `<div class="group no-print notfall-cta"><div class="row"><div class="grow"><b>Macht den Plan zu eurem</b><small>4 kurze Fragen, etwa 2 Minuten. Alles bleibt auf diesem Mac.</small></div><a class="btn primary" href="#/notfall?edit=haushalt&flow=1">Los geht's</a></div></div>` : ''}
+    ${!local ? `<p class="faint sm section-note">${state.projects ? 'Euer Plan ließ sich gerade nicht laden. Lade die Seite neu.' : 'Eure Kontakte und Treffpunkte sind nur direkt auf dem Mac zu sehen.'}</p>` : ''}
+    ${setup.near || setup.far ? `${head('Treffpunkte', change('treffpunkte'))}<div class="group">${place('In der Nähe', setup.near)}${place('Außerhalb', setup.far)}</div>` : ''}
+    ${contacts.length ? `${head('Kontakte', change('kontakte'))}<div class="group">${contacts.map(c => `<div class="row"><div class="grow"><b>${esc(c.name || 'Kontakt')}</b></div>${c.phone ? `<a class="tel" href="tel:${esc(c.phone.replace(/[^+\d]/g, ''))}">${esc(c.phone)}</a>` : ''}</div>`).join('')}</div>` : ''}
+    ${people.length ? `${head('Was Helfer wissen müssen', change('personen'))}<div class="group">${people.map(x => `<div class="row"><div class="grow"><b>${esc(x.name || 'Ohne Name')}</b>${x.info ? `<small>${esc(x.info)}</small>` : ''}</div></div>`).join('')}</div>` : ''}
+    ${open.length ? `<div class="no-print"><div class="group-title">Noch offen</div><div class="group">${open.map(([step, label]) => `<a class="row link add-row" href="#/notfall?edit=${step}">${ic('plus', 16)}<span>${label}</span></a>`).join('')}</div></div>` : ''}
+    ${head('Plan', `${personal ? change('haushalt', 'Angaben ändern') : ''}${change('plan', 'Anpassen')}`, data.plan?.trim() ? 'Selbst angepasst' : 'Nach den Empfehlungen des BBK')}
+    <div class="group plan-text"><div class="md">${md(currentPlan(data))}</div></div>
+  </div></div>`;
+  renderWarnings($('#warnBox'));
+  const printBtn = $('#eprint');
+  if (printBtn) printBtn.onclick = () => {
+    const title = document.title;
+    document.title = 'Notfallplan';
+    window.print();
+    document.title = title;
+  };
+}
+
+// Saves shortly after each change, one save after the other, so an older save can never win.
+function emergencySaver(data) {
+  let timer = 0;
+  let dirty = false;
+  let saves = Promise.resolve();
+  const now = () => {
+    clearTimeout(timer);
+    if (!dirty) return saves;
+    dirty = false;
+    saves = saves.then(() => api.post('emergency/save', data).catch(() => null)).then(r => {
+      const status = $('#saveState');
+      if (status) status.textContent = r?.ok ? 'Gespeichert' : 'Nicht gespeichert';
+      if (!r?.ok) { dirty = true; if (!status) toast('Notfalldaten nicht gespeichert.'); }
+    });
+    return saves;
+  };
+  const later = () => {
+    dirty = true;
+    const status = $('#saveState');
+    if (status) status.textContent = '';
+    clearTimeout(timer);
+    timer = setTimeout(now, 500);
+  };
+  return { now, later };
+}
+
+const textField = (k, label, placeholder, value) => `<label class="ef"><span>${esc(label)}</span><input data-k="${k}" value="${esc(value || '')}" placeholder="${esc(placeholder)}" maxlength="500"></label>`;
+
+function mountHousehold(el, data, changed) {
+  const s = data.setup;
+  const counter = (k, label, value) => `<div class="count" data-k="${k}"><span>${label}</span><button type="button" data-d="-1" aria-label="${label}: weniger">−</button><b>${value}</b><button type="button" data-d="1" aria-label="${label}: mehr">+</button></div>`;
+  // the counter shows one adult from the start, so any answer here confirms that number
+  const touched = () => { if (!s.adults) s.adults = '1'; changed(); };
+  el.innerHTML = `
+    <div class="counts">${counter('adults', 'Erwachsene', +s.adults || 1)}${counter('kids', 'Kinder', +s.kids || 0)}</div>
+    <div class="taps">${HOUSEHOLD_CHOICES.map(([k, label]) => `<button type="button" class="tap" data-k="${k}" aria-pressed="${!!s[k]}">${esc(label)}</button>`).join('')}</div>
+    ${textField('needs', 'Braucht jemand etwas Besonderes?', 'Zum Beispiel Insulin, Rollator', s.needs)}
+    ${textField('home', 'Eure Adresse, für den Notruf', 'Straße, Ort', s.home)}`;
+  $$('.count', el).forEach(box => {
+    const k = box.dataset.k;
+    const out = $('b', box);
+    $$('button', box).forEach(b => (b.onclick = () => {
+      const value = Math.max(k === 'adults' ? 1 : 0, Math.min(20, +out.textContent + +b.dataset.d));
+      out.textContent = value;
+      s[k] = String(value);
+      touched();
+    }));
+  });
+  $$('.tap', el).forEach(b => (b.onclick = () => {
+    const on = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', on);
+    s[b.dataset.k] = on ? '1' : '';
+    touched();
+  }));
+  $$('input', el).forEach(i => (i.oninput = () => { s[i.dataset.k] = i.value; touched(); }));
+  return () => !!s.adults;
+}
+
+function mountMeetings(el, data, changed) {
+  const s = data.setup;
+  el.innerHTML = textField('near', 'In der Nähe', 'Zum Beispiel Spielplatz an der Ecke', s.near)
+    + textField('far', 'Außerhalb, falls ihr weg müsst', 'Zum Beispiel bei Oma in Erlangen', s.far);
+  $$('input', el).forEach(i => (i.oninput = () => { s[i.dataset.k] = i.value; changed(); }));
+  return () => !!(s.near?.trim() || s.far?.trim());
+}
+
+function mountRows(el, rows, fields, seed, wide, changed) {
+  while (rows.length < seed) rows.push({});
+  const paint = () => {
+    el.innerHTML = `${rows.map((row, i) => `<div class="input-row ${wide ? 'wide' : ''}" data-i="${i}">
+        ${fields.map(([k, label, type, hint]) => `<input data-k="${k}" ${type ? `type="${type}"` : ''} aria-label="${esc(label)}" placeholder="${esc(hint || label)}" value="${esc(row[k] || '')}" maxlength="500">`).join('')}
+        <button type="button" class="icon-btn" data-del title="Entfernen" aria-label="Entfernen">${ic('trash', 16)}</button></div>`).join('')}
+      <button type="button" class="btn" data-add>${ic('plus', 15)}Noch jemand</button>`;
+    $$('.input-row', el).forEach(line => {
+      const i = +line.dataset.i;
+      $$('input', line).forEach(input => (input.oninput = () => { rows[i][input.dataset.k] = input.value; changed(); }));
+      $('[data-del]', line).onclick = () => {
+        rows.splice(i, 1);
+        if (!rows.length) rows.push({});
+        paint();
+        changed();
+      };
+    });
+    $('[data-add]', el).onclick = () => {
+      rows.push({});
+      paint();
+      $$('.input-row', el).at(-1).querySelector('input').focus();
+    };
+  };
+  paint();
+  return () => rows.some(r => Object.values(r).some(v => String(v || '').trim()));
+}
+
+function mountContacts(el, data, changed) {
+  return mountRows(el, data.contacts, [['name', 'Name'], ['phone', 'Telefonnummer', 'tel']], 2, false, changed);
+}
+
+function mountPeople(el, data, changed) {
+  const seed = Math.max(1, Math.min(6, (+data.setup.adults || 0) + (+data.setup.kids || 0)));
+  return mountRows(el, data.people, [['name', 'Name'], ['info', 'Was Helfer wissen müssen', '', 'Zum Beispiel Insulin, Hausarzt']], seed, true, changed);
+}
+
+function renderNotfallStep(data, key, flow) {
+  const i = NOTFALL_STEPS.findIndex(x => x.key === key);
+  if (i < 0) {
+    location.hash = '#/notfall';
+    return;
+  }
+  const step = NOTFALL_STEPS[i];
+  const link = n => `#/notfall?edit=${NOTFALL_STEPS[n].key}&flow=1`;
+  const last = !flow || i === NOTFALL_STEPS.length - 1;
+  data.setup = data.setup || {};
+  data.contacts = data.contacts || [];
+  data.people = data.people || [];
+  $('#topLeft').innerHTML = `<a class="btn ghost sm" href="#/notfall">${ic('arrowLeft', 15)}Notfall</a>`;
+  view.innerHTML = `<div class="page notfall-step"><div class="page-inner narrow">
+    ${flow ? `<div class="step-meter"><span>Frage ${i + 1} von ${NOTFALL_STEPS.length}</span><div class="bar"><i style="width:${((i + 1) / NOTFALL_STEPS.length) * 100}%"></i></div></div>` : ''}
+    <h1>${step.title}</h1>
+    <p class="step-note">${step.note}</p>
+    <div class="step-body" id="stepBody"></div>
+    <div class="step-foot">
+      ${flow && i ? `<a class="btn ghost" href="${link(i - 1)}">Zurück</a>` : ''}
+      <span class="spacer"></span>
+      <span class="faint sm" id="saveState"></span>
+      <a class="btn primary" id="stepNext" href="${last ? '#/notfall' : link(i + 1)}"></a>
+    </div>
+  </div></div>`;
+  const saver = emergencySaver(data);
+  const next = $('#stepNext');
+  const body = $('#stepBody');
+  const label = () => { next.textContent = last ? 'Fertig' : filled() ? 'Weiter' : 'Überspringen'; };
+  const filled = step.mount(body, data, () => { saver.later(); label(); });
+  label();
+  body.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') next.click(); });
+  if (i && innerWidth > 900) $('input', body)?.focus();
+  leaveNotfall = saver.now;
+}
+
+async function renderPlanEditor(data) {
+  data.setup = data.setup || {};
+  if (!state.models) await loadModels().catch(() => {});
+  if (state.view !== 'notfall') return;
+  $('#topLeft').innerHTML = `<a class="btn ghost sm" href="#/notfall">${ic('arrowLeft', 15)}Notfall</a>`;
+  view.innerHTML = `<div class="page notfall-step"><div class="page-inner narrow">
+    <h1>Plan anpassen</h1>
+    <p class="step-note">Kurze Stichpunkte reichen. <code class="path">## Titel</code> macht eine Überschrift, <code class="path">- </code> einen Punkt.</p>
+    <textarea class="field" id="ePlan" rows="20" maxlength="30000" aria-label="Plan"></textarea>
+    <p class="plan-note" id="pNote" hidden>Die Vorschläge der KI können falsch oder gefährlich sein. Prüf jeden Punkt, lösch, was nicht passt, und ändere danach die Überschrift.</p>
+    <details class="plan-ai"><summary>Mit KI ergänzen</summary>
+      <p class="faint sm">Die KI hängt einen eigenen Abschnitt mit ungeprüften Vorschlägen an, der Rest bleibt, wie er ist. Lokale Modelle schreiben hier auch Falsches und Gefährliches. Der Prompt enthält nur die Antworten zu eurem Zuhause, ohne Adresse. Fügst du ihn in eine Online-KI ein, verlassen sie deinen Mac.</p>
+      <div class="plan-tools">
+        <button type="button" class="btn" id="pGenerate" ${state.power?.on ? 'disabled title="Stromsparen ist an"' : ''}>${ic('sparkle', 15)}Mit lokaler KI ergänzen</button>
+        <button type="button" class="btn" id="pCopy">${ic('copy', 15)}Prompt kopieren</button>
+      </div>
+    </details>
+    <div class="step-foot">
+      <button type="button" class="btn ghost" id="pReset">Zurück zur Vorlage</button>
+      <span class="spacer"></span>
+      <span class="faint sm" id="saveState"></span>
+      <a class="btn primary" href="#/notfall">Fertig</a>
+    </div>
+  </div></div>`;
+  const plan = $('#ePlan');
+  const note = $('#pNote');
+  const reset = $('#pReset');
+  const saver = emergencySaver(data);
+  plan.value = currentPlan(data);
+  const sync = () => {
+    // unchanged text stays automatic, so it keeps following the answers
+    data.plan = plan.value.trim() === fullTemplate(data.setup).trim() ? '' : plan.value;
+    reset.hidden = !data.plan;
+    saver.later();
+  };
+  reset.hidden = !data.plan?.trim();
+  plan.oninput = sync;
+
+  let armed = 0;
+  reset.onclick = () => {
+    if (!armed) {
+      reset.textContent = 'Plan ersetzen?';
+      armed = setTimeout(() => { armed = 0; reset.textContent = 'Zurück zur Vorlage'; }, 3000);
+      return;
+    }
+    clearTimeout(armed);
+    armed = 0;
+    reset.textContent = 'Zurück zur Vorlage';
+    note.hidden = true;
+    plan.value = fullTemplate(data.setup);
+    sync();
+  };
+  $('#pCopy').onclick = () => copyText(planPrompt(data.setup));
+
+  // Adds to the plan and replaces only an earlier version of its own section.
+  let ctrl = null;
+  const genBtn = $('#pGenerate');
+  const genLabel = genBtn.innerHTML;
+  genBtn.onclick = async () => {
+    if (ctrl) return ctrl.abort();
+    if (!householdLines(data.setup).length) return toast('Beantworte zuerst die Fragen zu eurem Zuhause.');
+    const model = currentModel();
+    if (!model) return toast('Kein KI-Modell installiert.');
+    const before = plan.value;
+    const own = before.replace(/(^|\n)## Vorschläge der KI, ungeprüft\n[\s\S]*?(?=\n## |$)/, '').trim();
+    const base = `${own}\n\n${AI_HEADING}\n`;
+    ctrl = new AbortController();
+    genBtn.textContent = 'Stoppen';
+    reset.disabled = true;
+    plan.readOnly = true;
+    note.hidden = true;
+    plan.value = `${base}Einen Moment …`;
+    plan.scrollTop = plan.scrollHeight;
+    let text = '';
+    let finished = false;
+    let failed = '';
+    try {
+      await streamNdjson('/api/chat', { model, mode: 'plain', think: false, memory: false, messages: [{ role: 'user', content: planPrompt(data.setup) }] }, ctrl.signal, ev => {
+        if (ev.t === 'tok') { text += ev.c; plan.value = base + text; plan.scrollTop = plan.scrollHeight; }
+        else if (ev.t === 'done') finished = true;
+        else if (ev.t === 'error') failed = ev.c;
+      });
+    } catch (e) {
+      if (e.name !== 'AbortError') failed = e.message;
+    }
+    const stopped = ctrl.signal.aborted;
+    ctrl = null;
+    plan.readOnly = false;
+    reset.disabled = false;
+    genBtn.innerHTML = genLabel;
+    const points = finished && !failed ? cleanPoints(text) : [];
+    if (points.length) {
+      plan.value = base + points.join('\n');
+      sync();
+      note.hidden = false;
+      return;
+    }
+    plan.value = before;
+    if (!stopped) toast(failed || 'Die KI hat keine brauchbaren Punkte geliefert.');
+  };
+  leaveNotfall = () => {
+    ctrl?.abort();
+    return saver.now();
+  };
+}
+
 /* ================================================================ library */
 
 async function showLibrary() {
@@ -1560,9 +2236,10 @@ async function showLibrary() {
       <div class="grow"><b>${esc(b.title)}</b><p>${esc(b.description)}</p>
         <div class="meta"><span>${fmtNum(b.articles)} Artikel</span><span class="pill">${esc(b.lang)}</span></div></div>
     </a>`;
+  const byWeight = (x, y) => (y.lang === 'de') - (x.lang === 'de') || y.articles - x.articles;
   const sections = (cat === 'all' ? present : present.filter(c => c.id === cat)).map(c => `
     ${cat === 'all' ? `<div class="section-h"><h2>${esc(c.title)}</h2><span>${state.books.filter(b => b.category === c.id).length}</span></div>` : ''}
-    <div class="lib-grid">${state.books.filter(b => b.category === c.id).map(card).join('')}</div>`).join('');
+    <div class="lib-grid">${state.books.filter(b => b.category === c.id).sort(byWeight).map(card).join('')}</div>`).join('');
   const others = state.books.filter(b => !state.categories.some(c => c.id === b.category));
   const recent = store.get('recent', []).filter(r => bookById(r.book) && r.path !== bookById(r.book).main).slice(0, 6);
 
@@ -1572,6 +2249,7 @@ async function showLibrary() {
       <span class="spacer"></span>
       <button class="btn" id="libSearch">${ic('search', 16)} Durchsuchen <kbd>⌘K</kbd></button>
       ${state.books.length ? `<button class="btn" id="libRandom">${ic('dice', 16)} Zufall</button>` : ''}
+      ${state.projects && state.books.length ? `<a class="btn" href="#/settings?tab=content">${ic('download', 16)} Quellen verwalten</a>` : ''}
     </div>
     ${state.books.length ? `
       <div class="filters">
@@ -1645,6 +2323,9 @@ function confirmClick(btn, fn) {
 
 const activeTask = (kind, ref) => state.tasks.find(t => (t.kind === kind || (kind === 'zim' && t.kind === 'map')) && t.ref === ref && ['queued', 'running'].includes(t.status));
 
+const openSources = new Set();
+let sourceQuery = '';
+
 async function renderContent(el) {
   const c = await api.get('catalog');
   if (!$('#tabBody') || el !== $('#tabBody')) return;
@@ -1652,6 +2333,7 @@ async function renderContent(el) {
   const onlyInstalled = store.get('onlyInstalled', false);
   const used = c.items.reduce((n, i) => n + (i.installed_size || 0), 0) + c.extra.reduce((n, b) => n + b.size, 0);
   const usedGb = used / 1e9;
+  const refocus = document.activeElement?.id === 'srcQuery';
   const otherGb = Math.max(c.disk_total_gb - c.disk_free_gb - usedGb, 0);
   const total = c.disk_total_gb || 1;
 
@@ -1693,22 +2375,27 @@ async function renderContent(el) {
       </div>`;
     }).join('')}</div>
 
-    <div style="display:flex;align-items:center;gap:8px;margin:0 0 10px">
+    <div class="src-tools">
       <div class="group-title" style="margin:0">Einzelne Quellen</div>
       <span class="spacer"></span>
       <select class="select" id="lang"><option value="all">Alle Sprachen</option><option value="de">Deutsch</option><option value="en">Englisch</option></select>
       <button class="filter ${onlyInstalled ? 'on' : ''}" id="only">Installiert</button>
       <button class="btn sm ghost" id="refresh" title="Prüft bei Kiwix, ob es neuere Versionen gibt">${ic('refresh', 14)} ${c.checked ? 'Erneut prüfen' : 'Updates prüfen'}</button>
     </div>
+    <div class="ms-input src-search">${ic('search', 16)}<input id="srcQuery" placeholder="Quelle suchen" aria-label="Quelle suchen" autocomplete="off"></div>
     ${c.categories.map(cat => {
       const rows = items.filter(i => i.cat === cat.id);
       if (!rows.length) return '';
-      return `<div class="group-title" style="margin-top:18px">${esc(cat.title)}</div><div class="group">${rows.map(it => `
-        <div class="row">
+      const have = rows.filter(i => i.installed).length;
+      const open = onlyInstalled || openSources.has(cat.id) || rows.some(i => activeTask('zim', i.id));
+      return `<details class="src-group" data-cat="${esc(cat.id)}" ${open ? 'open' : ''}>
+        <summary><b>${esc(cat.title)}</b><span>${have ? `${have} von ${rows.length} installiert` : `${rows.length} ${rows.length === 1 ? 'Quelle' : 'Quellen'}`}</span>${ic('chevDown', 15)}</summary>
+        <div class="group">${rows.map(it => `
+        <div class="row" data-src="${esc(`${it.title} ${it.desc}`.toLowerCase())}">
           <div class="grow"><b>${esc(it.title)}</b> ${it.kind === 'map' ? '' : `<span class="pill">${esc(it.lang)}</span>`}<small>${esc(it.desc)}</small></div>
           <span class="size">${fmtGb(it.gb)}</span>
           <div class="acts" data-status="${esc(it.id)}">${status(it)}${action(it)}</div>
-        </div>`).join('')}</div>`;
+        </div>`).join('')}</div></details>`;
     }).join('')}
     ${c.extra.length ? `<div class="group-title" style="margin-top:18px">Eigene ZIM-Dateien</div><div class="group">${c.extra.map(b => `
       <div class="row"><div class="grow"><b>${esc(b.title)}</b> <span class="pill">${esc(b.lang)}</span><small>${esc(b.description)}</small></div>
@@ -1716,6 +2403,30 @@ async function renderContent(el) {
         <div class="acts"><button class="icon-btn" data-delete="${esc(b.id)}" title="Löschen">${ic('trash', 16)}</button></div></div>`).join('')}</div>` : ''}
     <p class="faint sm" style="margin-top:18px">Ordner: <code class="path">${esc(c.zim_dir)}</code>. Eigene .zim-Dateien einfach hineinlegen.</p>`;
 
+  const groups = $$('.src-group', el);
+  const applyQuery = () => {
+    const q = sourceQuery.trim().toLowerCase();
+    for (const d of groups) {
+      const rows = $$('.row', d);
+      rows.forEach(r => { r.hidden = !!q && !r.dataset.src.includes(q); });
+      d.hidden = rows.every(r => r.hidden);
+      if (q) d.open = true;
+    }
+  };
+  const query = $('#srcQuery');
+  query.value = sourceQuery;
+  query.oninput = () => {
+    const was = sourceQuery.trim();
+    sourceQuery = query.value;
+    if (was && !sourceQuery.trim()) groups.forEach(d => { d.open = onlyInstalled || openSources.has(d.dataset.cat); });
+    applyQuery();
+  };
+  groups.forEach(d => (d.ontoggle = () => {
+    if (sourceQuery.trim() || onlyInstalled) return;
+    d.open ? openSources.add(d.dataset.cat) : openSources.delete(d.dataset.cat);
+  }));
+  applyQuery();
+  if (refocus) query.focus();
   const rerender = () => renderContent(el);
   $('#lang').value = lang;
   $('#lang').onchange = e => { store.set('langFilter', e.target.value); rerender(); };
@@ -1826,7 +2537,7 @@ async function renderSystem(el) {
   const st = await api.get('status');
   const files = await api.get('files');
   if (!$('#tabBody') || el !== $('#tabBody')) return;
-  const kv = (k, v) => `<div class="row"><div class="grow"><b>${k}</b></div><span class="muted sm" style="text-align:right">${v}</span></div>`;
+  const kv = (k, v) => `<div class="row kv"><b>${k}</b><span class="muted sm">${v}</span></div>`;
   el.innerHTML = `
     <div class="group">
       ${kv('Mac', `${esc(st.chip)} · ${st.ram_gb} GB RAM`)}
@@ -1835,6 +2546,10 @@ async function renderSystem(el) {
       ${kv('Speicher', `${fmtGb(st.disk_free_gb)} frei`)}
       ${kv('Daten', `<code class="path">${esc(st.data_dir)}</code>`)}
     </div>
+    <div class="group-title">Stromsparen</div>
+    <div class="group"><div class="row">${ic('bulb', 20)}<div class="grow"><b>${state.power?.on ? 'Stromsparen ist an' : 'Nur das Wissen laufen lassen'}</b>
+      <small>Entlädt die KI-Modelle und sperrt die KI. Suchen, Lesen, Karten und der Notfall-Bereich bleiben an.</small></div>
+      ${state.projects ? `<button class="btn" id="powerToggle">${state.power?.on ? 'Ausschalten' : 'Einschalten'}</button>` : ''}</div></div>
     <div class="group-title">Eigene Dateien</div>
     <div class="group"><div class="row">${ic('folder', 20)}<div class="grow"><b>PDFs, E-Books, Handbücher</b>
       <small>Leg Dateien in diesen Ordner. Unterordner sind erlaubt.</small><small><code class="path">${esc(files.dir)}</code></small></div></div></div>
@@ -1852,6 +2567,11 @@ async function renderSystem(el) {
       ${kv('<code class="path">./basecamp code opencode</code>', 'Oder OpenCode, Codex, Qwen Code')}
       ${kv('<code class="path">./basecamp autostart on</code>', 'Startet beim Anmelden')}
     </div>`;
+  const toggle = $('#powerToggle', el);
+  if (toggle) toggle.onclick = async () => {
+    await setPowerSave(!state.power?.on);
+    renderSystem(el);
+  };
 }
 
 /* ================================================================ maps */
@@ -2205,12 +2925,13 @@ function createCodeChat(saved) {
     opts.hide('codeThink', !caps.includes('thinking'));
     const hint = $('.hero-hint', root);
     if (hint) hint.innerHTML = heroHint();
+    autosize();
   }
 
   let running = false; // the whole agent loop, including tool calls
   const busy = () => running || !!ctrl || !!pendingResolve;
   const autosize = () => {
-    sendBtn.disabled = !(ta.value.trim() || busy()) || !currentModel(true);
+    sendBtn.disabled = !busy() && (!ta.value.trim() || !currentModel(true) || !!state.power?.on);
     if (!ta.isConnected) return;
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
@@ -2226,7 +2947,7 @@ function createCodeChat(saved) {
     e.preventDefault();
     if (busy()) return stop();
     const text = ta.value.trim();
-    if (!text) return;
+    if (!text || state.power?.on) return;
     ta.value = '';
     autosize();
     send(text);
@@ -2305,7 +3026,7 @@ function createCodeChat(saved) {
       starters.innerHTML = '';
       return;
     }
-    inner.innerHTML = `<div class="hero">${wordmark('Code')}<p class="hero-hint">${heroHint()}</p></div>`;
+    inner.innerHTML = `<div class="hero">${wordmark()}<p class="hero-hint">${heroHint()}</p>${modeSwitch('code')}</div>`;
     starters.innerHTML = CODE_STARTERS.map(s => `<button class="starter" data-q="${esc(s)}">${esc(s)}</button>`).join('') +
       `<div class="starter-note">Lieber im Terminal? <code class="path">./basecamp code</code> startet Claude Code, OpenCode oder Codex mit dem lokalen Modell.</div>`;
     $$('[data-q]', starters).forEach(b => (b.onclick = () => send(b.dataset.q)));
@@ -2607,10 +3328,21 @@ async function pollTasks() {
   }
   lastActive = active.length;
 }
-setInterval(pollTasks, 2000);
+// slower while nobody looks and while saving power: this wakes browser and server every time
+(function tick() {
+  setTimeout(() => pollTasks().finally(tick), document.hidden || state.power?.on ? 30000 : 2000);
+})();
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  pollTasks();
+  loadPower();
+  loadWarnings();
+});
+setInterval(() => { if (!document.hidden) loadPower(); }, 30000);
+setInterval(() => { if (!document.hidden) loadWarnings(); }, 60000);
 
 /* ================================================================ start */
 
 hydrateIcons();
 pollTasks();
-Promise.allSettled([loadBooks(), loadProjects()]).finally(route);
+Promise.allSettled([loadBooks(), loadProjects(), loadPower(), loadWarnings()]).finally(route);

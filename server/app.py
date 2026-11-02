@@ -51,6 +51,7 @@ DEFAULT_CONFIG = {
     "ollama_url": "http://127.0.0.1:11434",
     "default_model": "",
     "num_ctx": 0,  # 0 = pick from RAM tier
+    "power_save": False,
 }
 
 
@@ -720,7 +721,10 @@ def write_json(path, value):
     """Goes through a temp file: a crash or a pulled USB stick must not leave half a file behind."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(value, ensure_ascii=False, indent=1), encoding="utf-8")
+    tmp.unlink(missing_ok=True)
+    # health data and addresses end up here: only this user account may read them
+    with os.fdopen(os.open(tmp, os.O_WRONLY | os.O_CREAT, 0o600), "w", encoding="utf-8") as f:
+        f.write(json.dumps(value, ensure_ascii=False, indent=1))
     os.replace(tmp, path)
 
 
@@ -948,7 +952,7 @@ def learn(project, model, text):
     on its own: in tests the small one removed "has a dog" because of "has a cat"."""
     changed = {"added": [], "removed": []}
     text = str(text or "").strip()[:LEARN_MESSAGE_CHARS]
-    if not text or not memory_file(project):
+    if not text or not memory_file(project) or CFG.get("power_save"):
         return changed
     try:
         if FORGET_CUE.search(text):
@@ -973,8 +977,53 @@ def learn(project, model, text):
     return changed
 
 
+# --------------------------------------------------------------------------- power saving
+
+POWER_SAVE_ERROR = "Stromsparen ist an, die KI ist aus. Suchen und Lesen gehen weiter. Schalte es aus, um zu chatten."
+BATTERY_RE = re.compile(r"InternalBattery[^\n]*?(\d+)%;\s*([^;\n]+)(?:;\s*([^\n]*))?")
+_battery = (0, None)
+
+
+def parse_battery(text):
+    """Reads the output of `pmset -g batt`. None on a Mac without a battery."""
+    m = BATTERY_RE.search(text or "")
+    if not m:
+        return None
+    left = re.search(r"(\d+):(\d\d) remaining", m.group(3) or "")
+    on_battery = "battery power" in text.lower()
+    return {"percent": int(m.group(1)), "on_battery": on_battery,
+            "charging": m.group(2).strip().lower() in ("charging", "finishing charge"),
+            "minutes_left": int(left.group(1)) * 60 + int(left.group(2)) if left and on_battery else None}
+
+
+def battery():
+    global _battery
+    if time.time() - _battery[0] > 20:
+        try:
+            out = subprocess.run(["pmset", "-g", "batt"], capture_output=True, text=True, timeout=5).stdout
+        except (OSError, subprocess.SubprocessError):
+            out = ""
+        _battery = (time.time(), parse_battery(out))
+    return _battery[1]
+
+
+def unload_models():
+    try:
+        for m in ollama("/api/ps", timeout=3).get("models", []):
+            ollama("/api/generate", {"model": m["name"], "stream": False, "keep_alive": 0}, timeout=30)
+    except Exception as e:
+        print(f"[basecamp] unload: {e}", file=sys.stderr)
+
+
+def power_state():
+    return {"on": bool(CFG.get("power_save")), "battery": battery()}
+
+
 def chat_events(req):
     """Generator of NDJSON events for one chat turn."""
+    if CFG.get("power_save"):
+        yield {"t": "error", "c": POWER_SAVE_ERROR}
+        return
     model = req.get("model") or pick_default_model(installed_models())
     messages = [{"role": m["role"], "content": m.get("content", ""), **({"images": m["images"]} if m.get("images") else {})}
                 for m in req.get("messages", []) if m.get("role") in ("user", "assistant")]
@@ -1042,6 +1091,235 @@ def chat_events(req):
                      "tps": round(ev.get("eval_count", 0) / max(ev.get("eval_duration", 1) / 1e9, 1e-6), 1),
                      "model": model}
     yield {"t": "done", "c": stats}
+    if CFG.get("power_save"):  # switched on while this answer ran
+        unload_models()
+
+
+# --------------------------------------------------------------------------- emergency plan
+
+# Health data, addresses and phone numbers: stays in this one file and only works directly on this Mac.
+EMERGENCY_FILE = DATA / "emergency.json"
+EMERGENCY_ROWS = {
+    "people": (("name", "info"), 12),
+    "contacts": (("name", "phone"), 40),
+}
+EMERGENCY_SETUP = ("home", "near", "far", "adults", "kids", "needs", "pets", "cellar", "water", "high", "gas", "electric", "nocar")
+EMERGENCY_TEXT_CHARS = 500
+EMERGENCY_PLAN_CHARS = 30000
+
+
+def clean_emergency(body):
+    text = lambda v: str(v or "").strip()[:EMERGENCY_TEXT_CHARS]
+    setup = body.get("setup") if isinstance(body.get("setup"), dict) else {}
+    data = {"setup": {k: text(setup.get(k)) for k in EMERGENCY_SETUP},
+            "plan": str(body.get("plan") or "")[:EMERGENCY_PLAN_CHARS], "updated": int(time.time())}
+    for key, (fields, limit) in EMERGENCY_ROWS.items():
+        rows = body.get(key) if isinstance(body.get(key), list) else []
+        cleaned = ({f: text(r.get(f)) for f in fields} for r in rows if isinstance(r, dict))
+        data[key] = [row for row in cleaned if any(row.values())][:limit]
+    return data
+
+
+# --------------------------------------------------------------------------- warnings and river levels
+
+# The only calls to the internet besides downloads. They start once the user switches them on and
+# only send the county. The last good state stays readable offline.
+WARN_FILE = DATA / "warnings.json"
+WARN_EVERY = 15 * 60
+WARN_DETAILS = 40  # warnings to read in full per refresh, any more keep their title
+NINA_API = "https://warnung.bund.de/api31"
+KREISE_URL = "https://warnung.bund.de/assets/json/converted_kreise.json"
+GAUGE_PAGE = "https://www.hnd.bayern.de/pegel/"
+FLOOD = CATALOG["flood"]
+# "Main" also appears as Obermain, Mittelmain and Untermain
+FLOOD_RE = re.compile(r"\b(?:ober|mittel|unter)?(?:" + "|".join(FLOOD["rivers"]) + r")\b", re.I)
+WARN_SOURCES = {"dwd": "DWD", "mow": "MoWaS", "kat": "KATWARN", "biw": "BIWAPP", "lhp": "Hochwasserportal", "pol": "Polizei"}
+WARN_RANK = {"Extreme": 4, "Severe": 3, "Moderate": 2, "Minor": 1}
+WARN_LOCK = threading.Lock()
+WARN_EVENT = threading.Event()
+WARN_DEFAULT = {"regions": [], "flood": False, "warnings": [], "warnings_at": 0, "warnings_error": "",
+                "gauges": [], "gauges_at": 0, "gauges_error": ""}
+
+
+def fetch_url(url, timeout=20):
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=timeout) as r:
+        return r.read()
+
+
+def plain_text(value):
+    """Warnings carry bits of HTML. The page shows plain text only."""
+    text = re.sub(r"<br\s*/?>", "\n", str(value or ""), flags=re.I)
+    return html.unescape(re.sub(r"<[^>]+>", "", text)).strip()[:3000]
+
+
+def warning_detail(wid):
+    d = json.loads(fetch_url(f"{NINA_API}/warnings/{urllib.parse.quote(wid)}.json"))
+    infos = d.get("info") or [{}]
+    info = next((i for i in infos if str(i.get("language", "")).startswith("de")), infos[0])
+    return {"msg": d.get("msgType", ""), "title": plain_text(info.get("headline")), "severity": info.get("severity", ""),
+            "text": plain_text(info.get("description")), "instruction": plain_text(info.get("instruction")),
+            "sent": d.get("sent", ""), "expires": info.get("expires", ""),
+            "area": ", ".join(plain_text(a.get("areaDesc")) for a in info.get("area") or [])[:300]}
+
+
+def fetch_warnings(regions, flood):
+    """Raises if a list cannot be read: a half list must never look like "no warnings"."""
+    found = {}
+    for region in regions:
+        for it in json.loads(fetch_url(f"{NINA_API}/dashboard/{region['id']}0000000.json")):
+            data = (it.get("payload") or {}).get("data") or {}
+            found.setdefault(it["id"], {"id": it["id"], "msg": data.get("msgType", ""), "severity": data.get("severity", ""),
+                                        "title": plain_text((it.get("i18nTitle") or {}).get("de") or data.get("headline")),
+                                        "text": "", "instruction": "", "sent": "", "expires": "", "area": ""})
+    items = []
+    for n, (wid, base) in enumerate(found.items()):
+        try:
+            items.append({**base, **(warning_detail(wid) if n < WARN_DETAILS else {})})
+        except Exception:  # the title alone still counts as a warning
+            items.append(base)
+    if flood:
+        # Official flood warnings name a river basin instead of a county, so only their text tells
+        # which river they mean. All of them are read: in a big flood ours could be the last one.
+        for it in json.loads(fetch_url(f"{NINA_API}/lhp/mapData.json")):
+            if it["id"] in found:
+                continue
+            try:
+                item = {"id": it["id"], **warning_detail(it["id"])}
+            except urllib.error.HTTPError as e:
+                if e.code == 404:  # lifted between the list and this request
+                    continue
+                raise
+            if FLOOD_RE.search(" ".join((item["title"], item["text"], item["area"]))):
+                items.append(item)
+    items = [{**w, "source": WARN_SOURCES.get(w["id"][:3], "NINA")} for w in items if w["msg"] != "Cancel"]
+    return sorted(items, key=lambda w: (WARN_RANK.get(w["severity"], 2), w["sent"]), reverse=True)
+
+
+class GaugeParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.tags = []
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "img" and a.get("data-thema") == "pegel":
+            self.tags.append(a)
+
+
+def parse_gauges(page):
+    parser = GaugeParser()
+    parser.feed(page)
+    gauges = []
+    for a in parser.tags:
+        name = a.get("data-name", "")
+        if name.endswith(" Q"):  # a second entry for the same gauge, with the flow only
+            continue
+        level, stage = a.get("data-wert", ""), a.get("data-ms", "")
+        gauges.append({"id": a.get("id", name), "name": name, "river": a.get("data-zeile2", ""),
+                       "level": int(level) if re.fullmatch(r"-?\d+", level) else None,
+                       "stage": int(stage) if stage.isdigit() else None, "at": a.get("data-datum", "")})
+    return gauges
+
+
+def fetch_gauges():
+    """All gauges on the rivers we follow, plus every other gauge in the area that reports a flood."""
+    seen = {}
+    for name in FLOOD["pages"]:
+        for g in parse_gauges(fetch_url(GAUGE_PAGE + name).decode("utf-8", "replace")):
+            if g["river"] in FLOOD["rivers"] or (g["stage"] or 0) >= 1:
+                seen.setdefault(g["id"], g)
+    if not any(g["level"] is not None for g in seen.values()):
+        raise ValueError("no gauge readings on the page")  # the page changed: not the same as "all fine"
+    return list(seen.values())
+
+
+def read_warnings():
+    return {**WARN_DEFAULT, **read_json(WARN_FILE, {})}
+
+
+def fetch_problem(e):
+    if isinstance(e, urllib.error.HTTPError):
+        return "Dienst gerade gestört"
+    if isinstance(e, OSError):
+        return "Keine Verbindung"
+    return "Antwort nicht lesbar"
+
+
+def refresh_warnings():
+    """Keeps the last good state of each source when a fetch fails."""
+    with WARN_LOCK:
+        before = read_warnings()
+        update = {}
+        if before["regions"] or before["flood"]:
+            try:
+                update.update(warnings=fetch_warnings(before["regions"], before["flood"]), warnings_at=int(time.time()), warnings_error="")
+            except Exception as e:
+                print(f"[basecamp] warnings: {e}", file=sys.stderr)
+                update["warnings_error"] = fetch_problem(e)
+        if before["flood"]:
+            try:
+                update.update(gauges=fetch_gauges(), gauges_at=int(time.time()), gauges_error="")
+            except Exception as e:
+                print(f"[basecamp] gauges: {e}", file=sys.stderr)
+                update["gauges_error"] = fetch_problem(e)
+        with STORE_LOCK:
+            now = read_warnings()
+            if (now["regions"], now["flood"]) == (before["regions"], before["flood"]) and update:
+                write_json(WARN_FILE, {**now, **update})
+
+
+def warnings_worker():
+    while True:
+        try:
+            refresh_warnings()
+        except Exception as e:
+            print(f"[basecamp] warnings: {e}", file=sys.stderr)
+        WARN_EVENT.wait(WARN_EVERY)
+        WARN_EVENT.clear()
+
+
+def warning_active(w, now):
+    try:
+        return not w["expires"] or datetime.datetime.fromisoformat(w["expires"]).timestamp() > now
+    except ValueError:
+        return True
+
+
+def warnings_view():
+    state = read_warnings()
+    now = time.time()
+    state["warnings"] = [w for w in state["warnings"] if warning_active(w, now)]
+    return {**state, "now": int(now), "checking": WARN_LOCK.locked() or WARN_EVENT.is_set(),
+            "flood_rivers": FLOOD["rivers"], "flood_regions": FLOOD["regions"]}
+
+
+def save_warning_settings(body):
+    regions = []
+    for r in body.get("regions") or []:
+        rid = str(r.get("id")) if isinstance(r, dict) else ""
+        if re.fullmatch(r"\d{5}", rid):
+            regions.append({"id": rid, "name": str(r.get("name") or rid)[:80]})
+    with STORE_LOCK:
+        state = read_warnings()
+        changed = regions[:5] != state["regions"] or bool(body.get("flood")) != state["flood"]
+        state.update(regions=regions[:5], flood=bool(body.get("flood")))
+        if changed:  # "no warnings" from the old area must not pass for the new one
+            state.update(WARN_DEFAULT | {"regions": state["regions"], "flood": state["flood"]})
+        write_json(WARN_FILE, state)
+    WARN_EVENT.set()
+
+
+def search_regions(q):
+    """Counties, so the user can search by name. The list is kept after the first download."""
+    path = CACHE_DIR / "kreise.json"
+    names = read_json(path, None)
+    if names is None:
+        names = {k: v["NAME"] for k, v in json.loads(fetch_url(KREISE_URL)).items()}
+        write_json(path, names)
+    q = q.strip().lower()
+    label = lambda n: n if n.split(" ")[0] in ("Landkreis", "Kreis", "Region", "Regionalverband", "Städteregion", "Eifelkreis") else f"Stadt {n}"
+    hits = sorted((n.lower().find(q), n, k) for k, n in names.items() if q in n.lower())
+    return [{"id": k, "name": label(n)} for _, n, k in hits[:12]]
 
 
 # --------------------------------------------------------------------------- background tasks
@@ -1642,6 +1920,9 @@ def run_tool(cwd, name, args):
 
 
 def code_events(req):
+    if CFG.get("power_save"):
+        yield {"t": "error", "c": POWER_SAVE_ERROR}
+        return
     model = req.get("model") or pick_default_model(installed_models())
     try:
         cwd = workspace(req.get("cwd"))
@@ -1708,6 +1989,8 @@ def code_events(req):
     if calls:
         yield {"t": "tool_calls", "c": calls}
     yield {"t": "done", "c": stats}
+    if CFG.get("power_save"):  # switched on while this step ran
+        unload_models()
 
 
 CODE_SAMPLING = [  # what the model makers recommend for coding and tool use
@@ -1747,10 +2030,11 @@ def lan_ips():
     return sorted(ips)
 
 
-# Chats stay in the browser, but memory and instructions sit on the server. With --lan anyone in the
-# WLAN could read them, so like the code agent they only work directly on this Mac.
-PRIVATE_ROUTES = ("projects", "memory")
-PRIVATE_ERROR = "Projekte und Gedächtnis gehen nur direkt auf diesem Mac."
+# Chats stay in the browser, but memory, instructions and the emergency plan sit on the server. With
+# --lan anyone in the WLAN could read them, so like the code agent they only work directly on this Mac.
+# A phone can still read the public warnings and see that the AI is off, but not change anything.
+PRIVATE_ROUTES = ("projects", "memory", "emergency", "warnings", "power")
+PRIVATE_ERROR = "Das geht nur direkt auf diesem Mac."
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1993,7 +2277,14 @@ main{{max-width:440px;padding:24px;text-align:center}}h1{{font:600 26px/1.2 Geor
         self.end_headers()
         self.wfile.write(page)
 
-    def api_memory_get(self, route, qs):
+    def api_private_get(self, route, qs):
+        if route == "emergency":
+            return self.send_json(read_json(EMERGENCY_FILE, {}))
+        if route == "warnings/regions":
+            try:
+                return self.send_json({"regions": search_regions(qs.get("q", ""))})
+            except (urllib.error.URLError, OSError):
+                return self.send_json({"error": "Dafür braucht es einmal Internet."}, 502)
         if route == "projects":
             projects = [{**p, "facts": len(read_memory(p["id"]))} for p in all_projects()]
             return self.send_json({"projects": projects})
@@ -2003,7 +2294,23 @@ main{{max-width:440px;padding:24px;text-align:center}}h1{{font:600 26px/1.2 Geor
             return self.send_json({"facts": read_memory(qs.get("project"))})
         return self.send_json({"error": "unknown route"}, 404)
 
-    def api_memory_post(self, route, body):
+    def api_private_post(self, route, body):
+        if route == "emergency/save":
+            data = clean_emergency(body)
+            with STORE_LOCK:
+                write_json(EMERGENCY_FILE, data)
+            return self.send_json({"ok": True, "updated": data["updated"]})
+        if route == "power":
+            save_config({"power_save": bool(body.get("on"))})
+            if body.get("on"):
+                unload_models()
+            return self.send_json(power_state())
+        if route == "warnings/settings":
+            save_warning_settings(body)
+            return self.send_json(warnings_view())
+        if route == "warnings/refresh":
+            WARN_EVENT.set()
+            return self.send_json(warnings_view())
         project = body.get("project")
         if route == "projects/save":
             saved = save_project(body.get("id"), {k: body[k] for k in ("name", "instructions") if k in body})
@@ -2027,10 +2334,14 @@ main{{max-width:440px;padding:24px;text-align:center}}h1{{font:600 26px/1.2 Geor
         return self.send_json({"error": "unknown route"}, 404)
 
     def api_get(self, route, qs):
+        if route == "power":
+            return self.send_json(power_state())
+        if route == "warnings":
+            return self.send_json(warnings_view())
         if route.split("/")[0] in PRIVATE_ROUTES:
             if not self.loopback():
                 return self.send_json({"error": PRIVATE_ERROR}, 403)
-            return self.api_memory_get(route, qs)
+            return self.api_private_get(route, qs)
         if route == "status":
             installed = installed_models()
             hw = hardware()
@@ -2132,7 +2443,7 @@ main{{max-width:440px;padding:24px;text-align:center}}h1{{font:600 26px/1.2 Geor
         if route.split("/")[0] in PRIVATE_ROUTES:
             if not self.loopback():
                 return self.send_json({"error": PRIVATE_ERROR}, 403)
-            return self.api_memory_post(route, body)
+            return self.api_private_post(route, body)
         if route == "chat":
             if not self.loopback():
                 body = {k: v for k, v in body.items() if k not in ("project", "memory")}
@@ -2446,6 +2757,7 @@ def main():
     LIB.rescan()
     threading.Thread(target=download_worker, daemon=True).start()
     threading.Thread(target=repair_places, daemon=True).start()
+    threading.Thread(target=warnings_worker, daemon=True).start()
     host, port = CFG["host"], int(CFG["port"])
     if "--lan" in sys.argv:
         host = CFG["host"] = "0.0.0.0"

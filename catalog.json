@@ -1280,6 +1280,11 @@
    "desc": "Dictionary"
   }
  ],
+ "flood": {
+  "rivers": ["Regnitz", "Main"],
+  "pages": ["regnitz", "oberer_main_elbe", "unterer_main"],
+  "regions": ["094", "095", "096"]
+ },
  "models": [
   {
    "name": "qwen3.5:2b",

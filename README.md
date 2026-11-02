@@ -14,7 +14,10 @@ Offline-Wissen und lokale KI für den Mac. Wikipedia, WikiMed, iFixit, Bücher, 
 - Lesen wie im Original: Wikipedia mit Inhaltsverzeichnis, Link-Vorschau beim Drüberfahren, Nachtmodus und Textgröße.
 - ⌘K-Suche: Titel, Volltext, Orte und eigene Dateien. Auch nur in einer Quelle.
 - Karten: Offline-Karten mit deutscher Beschriftung und Ortssuche.
-- Code: Ein Agent schreibt und testet Skripte in einem eigenen Ordner. Befehle laufen erst nach deiner Freigabe.
+- Notfall: Der Plan ist sofort da, auch ohne Internet und als PDF zum Ausdrucken. Er folgt den Empfehlungen des BBK. Vier kurze Fragen machen ihn zu eurem: Zuhause, Treffpunkte, Kontakte und was Helfer wissen müssen.
+- Warnungen: NINA, DWD und Hochwasser für deinen Kreis, dazu die Pegel an Regnitz und Main. Abruf nur, wenn du es einschaltest und solange es Netz gibt. Der letzte Stand bleibt offline lesbar und ist als veraltet markiert.
+- Stromsparen: Zeigt den Akkustand und entlädt die KI-Modelle, sodass nur das Wissen läuft.
+- Code: Ein Agent schreibt und testet Skripte in einem eigenen Ordner. Befehle laufen erst nach deiner Freigabe. Du schaltest im neuen Chat von Chat auf Code um.
 - USB-Stick: Ein Befehl packt App, KI-Modelle und hunderte GB Wissen auf einen Stick. Läuft auf jedem Mac, ohne Installation.
 
 | Chat mit Quellen | Link-Vorschau |
@@ -111,6 +114,10 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 - Agent-Dateien bleiben im Arbeitsordner (Standard `data/code`). Befehle brauchen eine Freigabe, außer "Automatisch" ist an.
 - Projekte und Gedächtnis gehen nur direkt auf dem Mac, nie übers WLAN. Auf dem Handy läuft der Chat ohne sie.
 - Das Gedächtnis lernt nur aus dem, was du selbst schreibst, nie aus Antworten oder Artikeln. Es löscht nur, wenn du es sagst. Es liegt in `data/memory` und `data/projects.json`. `./basecamp usb` kopiert es nicht auf den Stick. Läuft Basecamp vom Stick, entsteht dort ein eigenes.
+- Notfalldaten, Projekte und Gedächtnis liegen in `data/`, nur dein Benutzerkonto kann sie lesen. Im WLAN sind sie gesperrt, und sie kommen nicht mit auf den USB-Stick.
+- Die Anpassung des Notfallplans an deinen Haushalt kommt aus festen Regeln, nicht von der KI. Die lokale KI kann nur einen eigenen Abschnitt anhängen, der auch auf dem Ausdruck "ungeprüft" heißt, denn lokale Modelle schreiben hier auch gefährliche Ratschläge. In den Prompt kommen nur die Antworten zu eurem Zuhause, keine Namen, Telefonnummern oder Adressen. Was du bei "Braucht jemand etwas Besonderes?" einträgst, steht mit drin.
+- Warnungen sind aus, bis du sie einschaltest. Dann fragt Basecamp alle 15 Minuten warnung.bund.de und hnd.bayern.de ab und sendet dabei nur den Code des Kreises. Das sind die einzigen Abrufe außer den Downloads, die du selbst startest.
+- Basecamp zeigt Warnungen nur an und meldet sich nicht von selbst. Die NINA-App, Radio und Sirenen ersetzt es nicht.
 
 ## Aufbau
 
@@ -120,7 +127,7 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 - `server/static/`: Oberfläche (HTML, CSS, JavaScript ohne Build-Schritt)
 - `server/static/reader/`: läuft in jedem Artikel (Inhaltsverzeichnis, Link-Vorschau, Nachtmodus)
 - `catalog.json`: Quellen, Pakete und Modelle
-- `data/`: Inhalte, Karten, eigene Dateien, Agent-Ordner, Projekte, Gedächtnis (nicht im Repo)
+- `data/`: Inhalte, Karten, eigene Dateien, Agent-Ordner, Projekte, Gedächtnis, Notfallplan, letzter Stand der Warnungen (nicht im Repo)
 
 ## Quellen und Lizenzen
 
@@ -130,3 +137,4 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 - Ortsnamen: GeoNames (CC BY 4.0)
 - Bibliotheken: MapLibre GL JS (BSD), pmtiles (BSD), Noto Sans (OFL), libzim (GPL, als Python-Paket geladen)
 - KI: Ollama (MIT), Modelle unter ihren eigenen Lizenzen
+- Warnungen: NINA-Warn-API des BBK, Hochwassernachrichtendienst Bayern (LfU). Im Zweifel gilt die Originalquelle.
