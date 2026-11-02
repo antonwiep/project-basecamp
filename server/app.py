@@ -336,7 +336,139 @@ class TextExtractor(HTMLParser):
         self.cur = []
 
 
+class DocExtractor(TextExtractor):
+    """For developer docs and Q&A: keeps code with its line breaks, tables and cross references."""
+    SKIP_TAGS = {"script", "style", "sup", "noscript", "nav", "footer", "head", "math", "svg", "button",
+                 "audio", "video", "iframe", "form", "template", "select"}
+    SKIP_CLASSES = {"navbox", "mw-editsection", "noprint", "metadata", "hatnote", "mw-ref", "reflist", "references",
+                    "_attribution", "headerlink", "rightside"}
+    BLOCKS = TextExtractor.BLOCKS | {"summary", "aside", "header", "main", "ul", "ol", "dl", "table", "figcaption"}
+    HEADINGS = {"h1", "h2", "h3", "h4", "h5", "h6"}
+    INLINE_CODE = {"code", "kbd", "samp", "tt"}
+
+    def __init__(self, posts=False):
+        super().__init__()
+        self.posts = posts  # Q&A page: only the question and answers, no votes, comments or menus
+        self.post = 0  # open <div>s inside the current post
+        self.skip_tag = ""
+        self.in_pre = False
+        self.lang = ""
+        self.cell = 0
+        self.url = ""  # the page online, from the attribution line
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        classes = (a.get("class") or "").split()
+        if tag == "a" and "_attribution-link" in classes:
+            self.url = a.get("href") or ""
+        if self.skip_tag:
+            self.skip += tag == self.skip_tag
+            return
+        if tag in VOID:
+            if tag == "br":
+                self.cur.append("\n" if self.in_pre else " ")
+            return
+        style = (a.get("style") or "").replace(" ", "")
+        if tag in self.SKIP_TAGS or "hidden" in a or "display:none" in style or self.SKIP_CLASSES & set(classes):
+            self.skip_tag, self.skip = tag, 1
+            return
+        if self.in_pre:
+            return
+        if self.posts and not self.post:
+            self.post_start(tag, a, classes)
+            return
+        if self.posts and tag == "div":
+            self.post += 1
+        if tag == "pre" and not self.cell:
+            self.flush()
+            self.in_pre = True
+            self.lang = a.get("data-language") or next((c[5:] for c in classes if c.startswith("lang-")), "")
+        elif tag in self.INLINE_CODE:
+            self.cur.append("`")
+        elif tag in ("td", "th"):
+            self.cell += 1
+        elif self.cell:
+            if tag in self.BLOCKS:
+                self.cur.append(" ")
+        elif tag == "li":
+            self.flush()
+            self.cur.append("- ")
+        elif tag in self.HEADINGS:
+            self.flush()
+            self.cur.append("## ")
+        elif tag in self.BLOCKS and "".join(self.cur).strip() != "-":
+            self.flush()  # a <p> right after <li> stays on the "- " line
+
+    def post_start(self, tag, a, classes):
+        if tag != "div":
+            return
+        if "js-post-body" in classes:
+            self.post = 1
+        elif a.get("id") == "question":
+            self.blocks.append(f"## Question (score {a.get('data-score', '0')})")
+        elif (a.get("id") or "").startswith("answer-"):
+            accepted = ", accepted" if "accepted-answer" in classes else ""
+            self.blocks.append(f"## Answer (score {a.get('data-score', '0')}{accepted})")
+
+    def handle_endtag(self, tag):
+        if tag in VOID:
+            return
+        if self.skip_tag:
+            if tag == self.skip_tag:
+                self.skip -= 1
+                if not self.skip:
+                    self.skip_tag = ""
+            return
+        if self.in_pre:
+            if tag == "pre":
+                code = "".join(self.cur).strip("\n").rstrip()
+                self.cur, self.in_pre = [], False
+                if code:
+                    self.blocks.append(f"```{self.lang}\n{code}\n```")
+            return
+        if self.posts:
+            if not self.post:
+                return
+            if tag == "div":
+                self.post -= 1
+                if not self.post:
+                    self.flush()
+                    return
+        if tag in self.INLINE_CODE:
+            self.cur.append("`")
+        elif tag in ("td", "th"):
+            self.cell = max(0, self.cell - 1)
+            self.cur.append(" | ")
+        elif not self.cell and (tag in self.BLOCKS or tag in self.HEADINGS):
+            self.flush()
+
+    def handle_data(self, data):
+        if not self.skip and (self.post or not self.posts):
+            self.cur.append(data)
+
+    def flush(self):
+        text = re.sub(r"\s+", " ", "".join(self.cur)).strip().removesuffix(" |").replace("``", "")
+        if text not in ("", "##", "-"):
+            self.blocks.append(text)
+        self.cur = []
+
+
+def doc_blocks(book, path):
+    """The text of a page for a coding agent. Returns (title, blocks, url online)."""
+    entry = book.archive.get_entry_by_path(path)
+    item = entry.get_item()
+    if not item.mimetype.startswith("text/html"):
+        return entry.title, [], ""
+    html = bytes(item.content).decode("utf-8", "replace")
+    parser = DocExtractor(posts="js-post-body" in html)
+    parser.feed(html)
+    parser.flush()
+    return entry.title, parser.blocks, parser.url
+
+
 def article_blocks(book, path):
+    if book.category == "code":
+        return doc_blocks(book, path)[:2]
     entry = book.archive.get_entry_by_path(path)
     item = entry.get_item()
     if not item.mimetype.startswith("text/html"):

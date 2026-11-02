@@ -104,6 +104,7 @@ cmd_setup() {
   echo
   "$PY" "$ROOT/server/app.py" --info
   echo
+  offer_mcp
   say "Fertig. Nächste Schritte:"
   echo "   ./basecamp start            # startet alles und öffnet den Browser"
   echo "   ./basecamp models           # lädt das empfohlene KI-Modell"
@@ -210,6 +211,8 @@ cmd_download() {
   local json
   if [[ $# -eq 1 && "$1" =~ ^[SMLX]$ ]]; then
     json="{\"profile\": \"$1\"}"
+  elif [[ $# -eq 1 && "$1" == "code" ]]; then  # all coding knowledge, except the 107 GB of Stack Overflow
+    json="$("$PY" -I -c 'import json,sys; items=json.load(open(sys.argv[1]))["items"]; print(json.dumps({"ids": [i["id"] for i in items if i.get("cat") == "code" and i["id"] != "stackoverflow.com_en_all"]}))' "$ROOT/catalog.json")"
   else
     json="$("$PY" -I -c 'import json,sys; print(json.dumps({"ids": sys.argv[1:]}))' "$@")"
   fi
@@ -243,8 +246,65 @@ cmd_code() {  # terminal coding agents (Claude Code, OpenCode, Codex ...) on the
     [[ "$yn" =~ ^[jJyY] ]] || die "Abgebrochen. Laden mit: ./basecamp models $model"
     "$OLLAMA" pull "$model"
   fi
+  if [[ "$tool" == "claude" ]]; then  # the library comes along, without any setup and on a stick too
+    [[ "${1:-}" == "--" ]] && shift
+    set -- -- "$@" --mcp-config "$(mcp_config)" --allowedTools mcp__basecamp
+  fi
   say "Starte $tool mit $model (läuft komplett lokal)"
   exec "$OLLAMA" launch "$tool" --model "$model" "$@"
+}
+
+mcp_config() {
+  "$PY" -I -c 'import json,sys; print(json.dumps({"mcpServers": {"basecamp": {"command": sys.argv[1], "args": ["mcp", "serve"]}}}))' "$ROOT/basecamp"
+}
+
+offer_mcp() {  # one skippable question, only with Claude Code on this Mac and only once
+  command -v claude >/dev/null && [[ -t 0 ]] || return 0
+  claude mcp get basecamp >/dev/null 2>&1 && return 0
+  local yn
+  read -r -p "Deine Bibliothek auch in Claude Code nutzen? [J/n] " yn
+  if [[ "$yn" =~ ^[nN] ]]; then
+    echo "Geht später mit: ./basecamp mcp add"
+  else
+    cmd_mcp add
+  fi
+  echo
+}
+
+cmd_mcp() {  # the library as an MCP server for coding agents. No port, no network, read only.
+  case "${1:-}" in
+    serve)
+      need_venv
+      exec "$PY" "$ROOT/server/mcp_server.py"
+      ;;
+    add)
+      need_venv
+      command -v claude >/dev/null || die "Claude Code nicht gefunden."
+      claude mcp remove --scope user basecamp >/dev/null 2>&1 || true
+      claude mcp add --scope user basecamp -- "$ROOT/basecamp" mcp serve
+      say "Claude Code kann jetzt in jedem Projekt in deiner Bibliothek suchen. Gilt ab der nächsten Sitzung."
+      ;;
+    remove)
+      command -v claude >/dev/null || die "Claude Code nicht gefunden."
+      claude mcp remove --scope user basecamp
+      ;;
+    "")
+      need_venv
+      cat <<EOF
+Coding-Agents können deine Bibliothek durchsuchen und lesen. Nur lesen, ohne Netz und ohne offenen Port.
+
+  ./basecamp mcp add       Für Claude Code einrichten, in jedem Projekt
+  ./basecamp mcp remove    Wieder entfernen
+  ./basecamp download code Alle Programmier-Quellen laden, außer Stack Overflow
+
+./basecamp code bringt die Bibliothek bei Claude Code von selbst mit.
+
+Andere Agents (OpenCode, Codex ...) tragen das in ihre MCP-Einstellungen ein:
+$(mcp_config)
+EOF
+      ;;
+    *) die "Unbekannt: $1. Möglich: add, remove, serve" ;;
+  esac
 }
 
 cmd_update() {
@@ -298,10 +358,12 @@ Basecamp: Offline-Wissen und lokale KI für den Mac
   ./basecamp open                  Browser öffnen
   ./basecamp models [NAME]         KI-Modell laden (ohne NAME: Empfehlung für diesen Mac)
   ./basecamp download S|M|L|X      Inhaltspaket laden (Klein, Mittel, Groß, Maximal)
+  ./basecamp download code         Alle Programmier-Quellen laden, außer Stack Overflow
   ./basecamp download ID ...       Einzelne Quellen laden, z. B. ifixit_de_all oder map_de
   ./basecamp usb /Volumes/STICK  Alles auf einen Stick packen: App, KI und Wissen, läuft auf jedem Mac
   ./basecamp code [claude|opencode|codex|qwen] [--model NAME]
                                 Coding-Agent im Terminal mit lokalem Modell
+  ./basecamp mcp [add|remove]      Deine Bibliothek für Claude Code und andere Agents
   ./basecamp update                Neue Versionen der Inhalte laden
   ./basecamp autostart on|off      Beim Anmelden automatisch starten
   ./basecamp logs                  Logs ansehen
@@ -323,6 +385,7 @@ case "${1:-help}" in
   models)    shift; cmd_models "$@" ;;
   usb)       shift; need_venv; exec "$PY" "$ROOT/server/usb.py" "$@" ;;
   code)      shift; cmd_code "$@" ;;
+  mcp)       shift; cmd_mcp "$@" ;;
   update)    cmd_update ;;
   autostart) shift; cmd_autostart "$@" ;;
   logs)      tail -n 50 -f "$RUN/server.log" "$RUN/ollama.log" 2>/dev/null ;;

@@ -19,6 +19,7 @@ Offline-Wissen und lokale KI für den Mac. Wikipedia, WikiMed, iFixit, Bücher, 
 - Stromsparen: Zeigt den Akkustand und entlädt die KI-Modelle, sodass nur das Wissen läuft.
 - Bibel: Lutherbibel 1912 und Schlachter-Bibel 1951 komplett offline, in einem eigenen Leser. Suche nach Stelle oder Wort, zwei Übersetzungen nebeneinander, Verse markieren, kopieren und dazu fragen. Gute Nachricht und BasisBibel sind geschützt und nur als Link zur Online-Fassung dabei.
 - Code: Ein Agent schreibt und testet Skripte in einem eigenen Ordner. Befehle laufen erst nach deiner Freigabe. Du schaltest im neuen Chat von Chat auf Code um.
+- Wissen für Coding-Agents: Claude Code und andere Agents suchen und lesen in deiner Bibliothek. Doku für über 130 Sprachen und Tools mit vollständigen Code-Beispielen, dazu Fragen und Antworten von Stack Exchange.
 - USB-Stick: Ein Befehl packt App, KI-Modelle und hunderte GB Wissen auf einen Stick. Läuft auf jedem Mac, ohne Installation.
 
 | Chat mit Quellen | Link-Vorschau |
@@ -79,10 +80,28 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 
 | Paket | Größe | Inhalt |
 |---|---|---|
-| S | 25 GB | Wikipedia DE (Text), iFixit, Wörterbuch, Notfall-Wissen, Weltkarte, Entwickler-Doku |
-| M | 80 GB | Wikipedia DE mit Bildern, Bücher, Lehrbücher, Reiseführer, Karte Deutschland |
-| L | 228 GB | Dazu Wikipedia EN, Fachwissen, Karte DACH |
-| X | 742 GB | Alles, Karte Europa |
+| S | 26 GB | Wikipedia DE (Text), iFixit, Wörterbuch, Notfall-Wissen, Weltkarte, Doku fürs Programmieren |
+| M | 81 GB | Wikipedia DE mit Bildern, Bücher, Lehrbücher, Reiseführer, Karte Deutschland |
+| L | 242 GB | Dazu Wikipedia EN, Fachwissen, Programmier-Fragen und -Antworten, Karte DACH |
+| X | 856 GB | Alles, auch Stack Overflow, Karte Europa |
+
+## Bibliothek für Coding-Agents
+
+Coding-Agents greifen über MCP auf deine Bibliothek zu. Das spart Raten bei Funktionen und Befehlen und klappt auch ohne Internet.
+
+```bash
+./basecamp mcp add            # einmal einrichten, gilt in jedem Projekt
+```
+
+`./basecamp setup` fragt das einmal, wenn Claude Code installiert ist. Die Doku fürs Programmieren ist in jedem Paket dabei, die Fragen und Antworten ab Paket L, Stack Overflow in Paket X. Nur die Programmier-Quellen laden geht mit `./basecamp download code` (13 GB, ohne Stack Overflow).
+
+Danach arbeitest du wie immer mit `claude`. `./basecamp code` bringt die Bibliothek von selbst mit, auch vom Stick. Andere Agents: `./basecamp mcp` zeigt, was in ihre Einstellungen gehört.
+
+Der Agent bekommt drei Werkzeuge:
+
+- `search`: sucht in Doku und Programmier-Fragen. Mit `source` nur in einer Quelle, z. B. `python`, oder mit `all` in der ganzen Bibliothek.
+- `read`: liest eine Seite mit Code-Beispielen und Tabellen. `find` springt auf langen Seiten zur richtigen Stelle.
+- `list_sources`: zeigt, was da ist und was sich noch laden lässt.
 
 ## Modelle nach RAM
 
@@ -101,6 +120,8 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 ./basecamp status             # Zustand und Downloads
 ./basecamp code               # Claude Code mit lokalem Modell im Terminal
 ./basecamp code opencode      # oder OpenCode, Codex, Qwen Code
+./basecamp mcp add            # deine Bibliothek in Claude Code, in jedem Projekt
+./basecamp download code      # alle Programmier-Quellen, 13 GB (ohne Stack Overflow)
 ./basecamp update             # neue Versionen der Inhalte
 ./basecamp autostart on       # beim Anmelden starten
 ./basecamp usb /Volumes/X     # alles auf einen Stick
@@ -112,6 +133,7 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 - Artikel laufen auf einem eigenen Port (4775). Skripte in Wissensdateien kommen so nicht an die App und den Code-Agent.
 - Schutz gegen DNS-Rebinding: Nur bekannte Hostnamen werden angenommen.
 - Der Code-Agent geht nur direkt auf dem Mac, nie übers WLAN.
+- Die Bibliothek für Coding-Agents kann nur lesen. Sie öffnet keinen Port und braucht kein Netz. Der Agent startet sie selbst als eigenen Prozess.
 - Agent-Dateien bleiben im Arbeitsordner (Standard `data/code`). Befehle brauchen eine Freigabe, außer "Automatisch" ist an.
 - Projekte und Gedächtnis gehen nur direkt auf dem Mac, nie übers WLAN. Auf dem Handy läuft der Chat ohne sie.
 - Das Gedächtnis lernt nur aus dem, was du selbst schreibst, nie aus Antworten oder Artikeln. Es löscht nur, wenn du es sagst. Es liegt in `data/memory` und `data/projects.json`. `./basecamp usb` kopiert es nicht auf den Stick. Läuft Basecamp vom Stick, entsteht dort ein eigenes.
@@ -124,6 +146,7 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 
 - `basecamp`: Kommandozeile (Bash)
 - `server/app.py`: Server, Suche, Chat, Downloads, Code-Agent. Nur Python-Standardbibliothek plus libzim.
+- `server/mcp_server.py`: die Bibliothek als MCP-Server für Coding-Agents.
 - `server/usb.py`: baut den USB-Stick
 - `server/static/`: Oberfläche (HTML, CSS, JavaScript ohne Build-Schritt)
 - `server/static/reader/`: läuft in jedem Artikel (Inhaltsverzeichnis, Link-Vorschau, Nachtmodus)

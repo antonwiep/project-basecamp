@@ -67,7 +67,7 @@
   {
    "id": "S",
    "title": "Klein",
-   "desc": "Wikipedia Deutsch (Text), iFixit, Wörterbuch, Notfall-Wissen, Weltkarte."
+   "desc": "Wikipedia Deutsch (Text), iFixit, Wörterbuch, Notfall-Wissen, Weltkarte, Doku fürs Programmieren."
   },
   {
    "id": "M",
@@ -77,12 +77,12 @@
   {
    "id": "L",
    "title": "Groß",
-   "desc": "Dazu Wikipedia Englisch, Fachwissen als Ergänzung, Karte DACH."
+   "desc": "Dazu Wikipedia Englisch, Fachwissen als Ergänzung, Programmier-Fragen und -Antworten, Karte DACH."
   },
   {
    "id": "X",
    "title": "Maximal",
-   "desc": "Alles, auch die riesigen englischen Sammlungen und Karte Europa."
+   "desc": "Alles, auch die riesigen englischen Sammlungen, Stack Overflow und Karte Europa."
   }
  ],
  "items": [
@@ -848,7 +848,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.028,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Linux man pages Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -858,7 +858,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.014,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Web-APIs (DOM) Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -868,7 +868,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0025,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "PostgreSQL Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -878,7 +878,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0016,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Go Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -888,7 +888,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0059,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Rust Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -898,7 +898,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0013,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "C Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -908,7 +908,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0077,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "C++ Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -918,7 +918,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.005,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "NumPy Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -928,7 +928,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0047,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "pandas Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -938,7 +938,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.032,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Matplotlib Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -948,7 +948,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0026,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "React Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -958,7 +958,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.001,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Vue Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -968,7 +968,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0005,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Svelte Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -978,7 +978,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.001,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Next.js Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -988,7 +988,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0006,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Tailwind CSS Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -998,7 +998,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0006,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Flask Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1008,7 +1008,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0024,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "FastAPI Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1018,7 +1018,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0021,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Django Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1028,7 +1028,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0008,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "nginx Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1038,7 +1038,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0004,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "kubectl Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1048,7 +1048,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0004,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Lua Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1058,7 +1058,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0068,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "PHP Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1068,7 +1068,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.002,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Ruby Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1078,7 +1078,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.014,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Java (OpenJDK) Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
   },
@@ -1088,9 +1088,1149 @@
    "cat": "code",
    "lang": "en",
    "gb": 0.0078,
-   "p": "MLX",
+   "p": "SMLX",
    "title": "Kotlin Doku",
    "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_angular",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.002,
+   "p": "SMLX",
+   "title": "Angular Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_astro",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0022,
+   "p": "SMLX",
+   "title": "Astro Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_axios",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0003,
+   "p": "SMLX",
+   "title": "Axios Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_babel",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Babel Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_bootstrap",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0007,
+   "p": "SMLX",
+   "title": "Bootstrap Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_bun",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0011,
+   "p": "SMLX",
+   "title": "Bun Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_cypress",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0039,
+   "p": "SMLX",
+   "title": "Cypress Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_d3",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.01,
+   "p": "SMLX",
+   "title": "D3.js Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_date-fns",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "date-fns Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_deno",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0026,
+   "p": "SMLX",
+   "title": "Deno Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_electron",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0016,
+   "p": "SMLX",
+   "title": "Electron Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_esbuild",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "esbuild Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_eslint",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "SMLX",
+   "title": "ESLint Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_express",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Express Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_htmx",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "htmx Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_jest",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Jest Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_jquery",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0011,
+   "p": "SMLX",
+   "title": "jQuery Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_lodash",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Lodash Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_mocha",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Mocha Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_mongoose",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Mongoose Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_npm",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "npm Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_playwright",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "Playwright Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_prettier",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Prettier Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_puppeteer",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Puppeteer Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_react-native",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.002,
+   "p": "SMLX",
+   "title": "React Native Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_react-router",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "React Router Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_redux",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0003,
+   "p": "SMLX",
+   "title": "Redux Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_rxjs",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0013,
+   "p": "SMLX",
+   "title": "RxJS Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_sass",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Sass Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_sequelize",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Sequelize Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_socketio",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0011,
+   "p": "SMLX",
+   "title": "Socket.IO Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_svg",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "SVG Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_threejs",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "three.js Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_vite",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Vite Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_vitest",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "Vitest Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_vue-router",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Vue Router Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_web-extensions",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.004,
+   "p": "SMLX",
+   "title": "Browser-Erweiterungen Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_webpack",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "SMLX",
+   "title": "webpack Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_yarn",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Yarn Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_celery",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "SMLX",
+   "title": "Celery Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_click",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Click Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_django-rest-framework",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Django REST Framework Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_jinja",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Jinja Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_polars",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0013,
+   "p": "SMLX",
+   "title": "Polars Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_pygame",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "pygame Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_pytorch",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0061,
+   "p": "SMLX",
+   "title": "PyTorch Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_scikit-learn",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.056,
+   "p": "SMLX",
+   "title": "scikit-learn Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_tensorflow",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.006,
+   "p": "SMLX",
+   "title": "TensorFlow Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_werkzeug",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Werkzeug Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_clojure",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Clojure Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_cmake",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0028,
+   "p": "SMLX",
+   "title": "CMake Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_composer",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Composer Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_dart",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0096,
+   "p": "SMLX",
+   "title": "Dart Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_elixir",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0013,
+   "p": "SMLX",
+   "title": "Elixir Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_erlang",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0039,
+   "p": "SMLX",
+   "title": "Erlang Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_gcc",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0016,
+   "p": "SMLX",
+   "title": "GCC Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_gnu-make",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "GNU Make Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_groovy",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0032,
+   "p": "SMLX",
+   "title": "Groovy Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_haskell",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0039,
+   "p": "SMLX",
+   "title": "Haskell Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_julia",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0015,
+   "p": "SMLX",
+   "title": "Julia Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_laravel",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0037,
+   "p": "SMLX",
+   "title": "Laravel Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_nim",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.002,
+   "p": "SMLX",
+   "title": "Nim Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_ocaml",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0017,
+   "p": "SMLX",
+   "title": "OCaml Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_perl",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0051,
+   "p": "SMLX",
+   "title": "Perl Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_phoenix",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0011,
+   "p": "SMLX",
+   "title": "Phoenix Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_phpunit",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "PHPUnit Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_r",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0047,
+   "p": "SMLX",
+   "title": "R Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_rails",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0028,
+   "p": "SMLX",
+   "title": "Ruby on Rails Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_scala",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0018,
+   "p": "SMLX",
+   "title": "Scala Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_spring-boot",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "SMLX",
+   "title": "Spring Boot Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_symfony",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0029,
+   "p": "SMLX",
+   "title": "Symfony Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_tokio",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "SMLX",
+   "title": "Tokio Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_zig",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Zig Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_ansible",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.027,
+   "p": "SMLX",
+   "title": "Ansible Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_apache-http-server",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0013,
+   "p": "SMLX",
+   "title": "Apache HTTP Server Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_duckdb",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0019,
+   "p": "SMLX",
+   "title": "DuckDB Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_fish",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "fish Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_godot",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0019,
+   "p": "SMLX",
+   "title": "Godot Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_graphviz",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "Graphviz Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_hammerspoon",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "Hammerspoon Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_haproxy",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "HAProxy Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_kubernetes",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Kubernetes Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_latex",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "SMLX",
+   "title": "LaTeX Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_mariadb",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0093,
+   "p": "SMLX",
+   "title": "MariaDB Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_nix",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0004,
+   "p": "SMLX",
+   "title": "Nix Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_nushell",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0008,
+   "p": "SMLX",
+   "title": "Nushell Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_opengl",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "SMLX",
+   "title": "OpenGL Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_opentofu",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.001,
+   "p": "SMLX",
+   "title": "OpenTofu Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_powershell",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0019,
+   "p": "SMLX",
+   "title": "PowerShell Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_rabbitmq",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0022,
+   "p": "SMLX",
+   "title": "RabbitMQ Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_redis",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0009,
+   "p": "SMLX",
+   "title": "Redis Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_terraform",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.03,
+   "p": "SMLX",
+   "title": "Terraform Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_vagrant",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Vagrant Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_varnish",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0006,
+   "p": "SMLX",
+   "title": "Varnish Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "devdocs_en_vulkan",
+   "folder": "devdocs",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0005,
+   "p": "SMLX",
+   "title": "Vulkan Doku",
+   "desc": "Offizielle Referenz, für den Coding-Agenten"
+  },
+  {
+   "id": "archlinux_en_all_maxi",
+   "folder": "other",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.037,
+   "p": "SMLX",
+   "title": "Arch Wiki",
+   "desc": "Das beste Linux-Wiki, gilt oft auch für andere Systeme"
+  },
+  {
+   "id": "ubuntuusers_de_all_nopic",
+   "folder": "other",
+   "cat": "code",
+   "lang": "de",
+   "gb": 0.036,
+   "p": "SMLX",
+   "title": "ubuntuusers",
+   "desc": "Deutsches Linux-Wiki"
+  },
+  {
+   "id": "gentoo_en_all_maxi",
+   "folder": "other",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.092,
+   "p": "SMLX",
+   "title": "Gentoo Wiki",
+   "desc": "Linux im Detail"
+  },
+  {
+   "id": "peps.python_en_all",
+   "folder": "zimit",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0087,
+   "p": "SMLX",
+   "title": "Python PEPs",
+   "desc": "Warum Python so ist, wie es ist"
+  },
+  {
+   "id": "freecodecamp_en_all",
+   "folder": "freecodecamp",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.0075,
+   "p": "SMLX",
+   "title": "freeCodeCamp",
+   "desc": "Übungen, Algorithmen und Rosetta Code"
+  },
+  {
+   "id": "unix.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 1.2,
+   "p": "LX",
+   "title": "Unix & Linux (StackExchange)",
+   "desc": "Shell, Befehle und Systeme"
+  },
+  {
+   "id": "serverfault.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 1.5,
+   "p": "LX",
+   "title": "Server Fault",
+   "desc": "Server und Netzwerke betreiben"
+  },
+  {
+   "id": "dba.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.67,
+   "p": "LX",
+   "title": "Datenbanken (StackExchange)",
+   "desc": "SQL und Datenbanken"
+  },
+  {
+   "id": "codereview.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.528,
+   "p": "LX",
+   "title": "Code Review (StackExchange)",
+   "desc": "Besserer Code an echten Beispielen"
+  },
+  {
+   "id": "softwareengineering.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.458,
+   "p": "LX",
+   "title": "Softwarearchitektur (StackExchange)",
+   "desc": "Entwurf und Vorgehen"
+  },
+  {
+   "id": "security.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.419,
+   "p": "LX",
+   "title": "IT-Sicherheit (StackExchange)",
+   "desc": "Sicherheit in der Praxis"
+  },
+  {
+   "id": "devops.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.032,
+   "p": "LX",
+   "title": "DevOps (StackExchange)",
+   "desc": "Deployment und Automatisierung"
+  },
+  {
+   "id": "webmasters.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.216,
+   "p": "LX",
+   "title": "Webmaster (StackExchange)",
+   "desc": "Websites betreiben"
+  },
+  {
+   "id": "datascience.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.26,
+   "p": "LX",
+   "title": "Data Science (StackExchange)",
+   "desc": "Daten und Machine Learning"
+  },
+  {
+   "id": "cs.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.264,
+   "p": "LX",
+   "title": "Informatik (StackExchange)",
+   "desc": "Algorithmen und Grundlagen"
+  },
+  {
+   "id": "raspberrypi.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.285,
+   "p": "LX",
+   "title": "Raspberry Pi (StackExchange)",
+   "desc": "Basteln mit dem Raspberry Pi"
+  },
+  {
+   "id": "arduino.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.248,
+   "p": "LX",
+   "title": "Arduino (StackExchange)",
+   "desc": "Basteln mit Arduino"
+  },
+  {
+   "id": "vi.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.087,
+   "p": "LX",
+   "title": "Vim (StackExchange)",
+   "desc": "Der Editor Vim"
+  },
+  {
+   "id": "networkengineering.stackexchange.com_en_all",
+   "folder": "stack_exchange",
+   "cat": "code",
+   "lang": "en",
+   "gb": 0.124,
+   "p": "LX",
+   "title": "Netzwerke (StackExchange)",
+   "desc": "Netzwerktechnik"
   },
   {
    "id": "cooking.stackexchange.com_en_all",
@@ -1165,10 +2305,10 @@
   {
    "id": "superuser.com_en_all",
    "folder": "stack_exchange",
-   "cat": "qa",
+   "cat": "code",
    "lang": "en",
    "gb": 3.7,
-   "p": "X",
+   "p": "LX",
    "title": "Computer (Super User)",
    "desc": "Fragen und Antworten"
   },
@@ -1285,10 +2425,10 @@
   {
    "id": "askubuntu.com_en_all",
    "folder": "stack_exchange",
-   "cat": "qa",
+   "cat": "code",
    "lang": "en",
    "gb": 2.6,
-   "p": "X",
+   "p": "LX",
    "title": "Ask Ubuntu",
    "desc": "Fragen und Antworten zu Linux"
   },
@@ -1298,7 +2438,7 @@
    "cat": "code",
    "lang": "en",
    "gb": 107,
-   "p": "",
+   "p": "X",
    "title": "Stack Overflow",
    "desc": "Programmieren: Fragen und Antworten"
   },
