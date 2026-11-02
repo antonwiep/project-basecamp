@@ -1901,6 +1901,8 @@ function createCodeChat(saved) {
   function applyCaps() {
     const caps = chatModels(true).find(m => m.name === currentModel(true))?.caps || [];
     opts.hide('codeThink', !caps.includes('thinking'));
+    const hint = $('.hero-hint', root);
+    if (hint) hint.innerHTML = heroHint();
   }
 
   let running = false; // the whole agent loop, including tool calls
@@ -1987,6 +1989,12 @@ function createCodeChat(saved) {
   }
 
   // ---- rendering
+  // the models load after the first paint, so only warn once they are known
+  function heroHint() {
+    if (!isLocal) return 'Basecamp Code geht nur direkt auf dem Mac, nicht übers WLAN.';
+    if (state.models && !currentModel(true)) return 'Noch kein Modell mit Werkzeugen. <a href="#/settings?tab=models" style="text-decoration:underline">Code-Modell laden</a>';
+    return 'Schreibt und testet Skripte in einem Ordner auf deinem Mac. Alles bleibt lokal.';
+  }
   function renderEmpty() {
     const empty = !chat.messages.length;
     root.classList.toggle('empty', empty);
@@ -1995,10 +2003,7 @@ function createCodeChat(saved) {
       starters.innerHTML = '';
       return;
     }
-    const warn = !isLocal ? '<p>Basecamp Code geht nur direkt auf dem Mac, nicht übers WLAN.</p>'
-      : !currentModel(true) ? '<p>Noch kein Modell mit Werkzeugen. <a href="#/settings?tab=models" style="text-decoration:underline">Code-Modell laden</a></p>'
-        : `<p>Schreibt und testet Skripte in einem Ordner auf deinem Mac. Alles bleibt lokal.</p>`;
-    inner.innerHTML = `<div class="hero">${wordmark('Code')}${warn}</div>`;
+    inner.innerHTML = `<div class="hero">${wordmark('Code')}<p class="hero-hint">${heroHint()}</p></div>`;
     starters.innerHTML = CODE_STARTERS.map(s => `<button class="starter" data-q="${esc(s)}">${esc(s)}</button>`).join('') +
       `<div class="starter-note">Lieber im Terminal? <code class="path">./basecamp code</code> startet Claude Code, OpenCode oder Codex mit dem lokalen Modell.</div>`;
     $$('[data-q]', starters).forEach(b => (b.onclick = () => send(b.dataset.q)));
