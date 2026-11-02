@@ -3,6 +3,7 @@
 
 Only depends on the Python standard library and `libzim`.
 """
+import csv
 import datetime
 import html
 import io
@@ -26,6 +27,7 @@ import urllib.parse
 import urllib.request
 import unicodedata
 import uuid
+import xml.etree.ElementTree as ET
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 from html.parser import HTMLParser
@@ -35,6 +37,7 @@ from pathlib import Path
 from libzim.reader import Archive
 from libzim.search import Query, Searcher
 from libzim.suggestion import SuggestionSearcher
+from libzim.writer import Creator, Hint, Item, StringProvider
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = Path(__file__).resolve().parent / "static"
@@ -424,13 +427,14 @@ def search_files(q):
     return [f for f in list_files() if all(t in f["name"].lower() for t in terms)][:20]
 
 
-def retrieve(queries, max_sources, per_source_chars, book_ids=None, raw_terms=()):
+def retrieve(queries, max_sources, per_source_chars, book_ids=None, raw_terms=(), question=""):
     """Find the best passages for a question.
 
     `queries` maps lang -> list of search strings. `raw_terms` are the user's own words; they are
     also tried as exact article titles, in case the model mistranslated a rare word.
     """
-    books = [b for b in LIB.all() if b.fulltext and (not book_ids or b.id in book_ids)]
+    exact = bible_passages(question, per_source_chars, book_ids)
+    books = [b for b in LIB.all() if b.fulltext and bible_may_search(b, book_ids, exact, question)]
     raw_terms = [w for w in raw_terms if len(w) >= 5]
     all_terms = {t for qs in queries.values() for q in qs for t in keywords(q)} | set(raw_terms)
 
@@ -445,7 +449,9 @@ def retrieve(queries, max_sources, per_source_chars, book_ids=None, raw_terms=()
     def for_book(book):
         qs = queries.get(book.lang) or queries.get("en") or next(iter(queries.values()), [])
         cands = {}
-        prefer = 1.5 if book.lang == "de" else 0  # German first, English as backup
+        is_bible = book.category == "bibel"
+        # asked for by name, so it goes ahead of articles that only match a word. Else German first, English as backup
+        prefer = 20 if is_bible else 1.5 if book.lang == "de" else 0
 
         def add(path, title, score, follow=True):
             score += prefer
@@ -459,7 +465,7 @@ def retrieve(queries, max_sources, per_source_chars, book_ids=None, raw_terms=()
             words = q.split()
             bonus = 2 if qi == 0 else 0
             # article titles: the whole query, then shorter ("heart attack symptoms" -> "heart attack")
-            for n in range(len(words), 0, -1):
+            for n in range(0 if is_bible else len(words), 0, -1):  # a chapter's title says nothing about it
                 if n == 1 and len(words) > 2:
                     break
                 good = [(p, t) for p, t in book.suggest(" ".join(words[:n]), 2) if title_score(t) > 0]
@@ -489,14 +495,12 @@ def retrieve(queries, max_sources, per_source_chars, book_ids=None, raw_terms=()
     best = cands[0][0] if cands else 0
     picked, per_book = [], {}
     for score, book, path, title in cands:
-        if score < best * 0.45:
+        if score < best * 0.45 or len(exact) + len(picked) >= max_sources:
             break
         if per_book.get(book.id, 0) >= 2:
             continue
         per_book[book.id] = per_book.get(book.id, 0) + 1
         picked.append((book, path, title))
-        if len(picked) >= max_sources:
-            break
 
     def text_of(c):
         book, path, title = c
@@ -507,7 +511,7 @@ def retrieve(queries, max_sources, per_source_chars, book_ids=None, raw_terms=()
             return ""
 
     sources = []
-    for (book, path, title), text in zip(picked, POOL.map(text_of, picked)):
+    for book, path, title, text in exact + [(*c, text) for c, text in zip(picked, POOL.map(text_of, picked))]:
         if text:
             sources.append({"n": len(sources) + 1, "book": book.id, "source": book.label,
                             "lang": book.lang, "path": path, "title": title, "text": text})
@@ -1045,7 +1049,7 @@ def chat_events(req):
         yield {"t": "queries", "c": queries}
         yield {"t": "status", "c": f"Suche in {len(LIB.all())} Quellen …"}
         n_src, per = (4, 1200) if ctx <= 8192 else (6, 1800)
-        sources = retrieve(queries, n_src, per, req.get("books") or None, keywords(question))
+        sources = retrieve(queries, n_src, per, req.get("books") or None, keywords(question), question)
         yield {"t": "sources", "c": [{k: s[k] for k in ("n", "book", "source", "path", "title", "lang")} for s in sources]}
         if sources:
             system = SYSTEM_KNOWLEDGE
@@ -1358,18 +1362,19 @@ def kiwix_latest(item, force=False):
     folder = item["folder"]
     cached = _listing_cache.get(folder)
     if force or not cached or time.time() - cached[0] > 6 * 3600:
-        url = f"{CATALOG['kiwix_base']}/{folder}/"
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
         try:
-            with urllib.request.urlopen(req, timeout=30) as r:
-                html_text = r.read().decode("utf-8", "replace")
+            names = bible_listing() if item.get("bible") else kiwix_listing(folder)
         except Exception:
             if cached and not force:  # offline: the old listing is good enough
                 return _pick_latest(item, cached[1])
             raise
-        names = re.findall(r'href="([^"/?]+\.zim)"', html_text)
         _listing_cache[folder] = (time.time(), names)
     return _pick_latest(item, _listing_cache[folder][1])
+
+
+def kiwix_listing(folder):
+    html_text = fetch_url(f"{CATALOG['kiwix_base']}/{folder}/", timeout=30).decode("utf-8", "replace")
+    return re.findall(r'href="([^"/?]+\.zim)"', html_text)
 
 
 def _pick_latest(item, names):
@@ -1403,6 +1408,8 @@ def download_worker():
 
 def download_zim(task):
     item = ITEMS[task["ref"]]
+    if item.get("bible"):
+        return download_bible(task, item)
     fname = kiwix_latest(item)
     if not fname:
         raise RuntimeError("Datei nicht im Kiwix-Katalog gefunden")
@@ -1453,6 +1460,10 @@ def download_zim(task):
         time.sleep(min(60, 2 ** attempt))
     else:
         raise RuntimeError("Download unvollständig. Nochmal versuchen, er setzt an der Stelle fort.")
+    install_zim(part, dest, item)
+
+
+def install_zim(part, dest, item):
     try:
         Archive(str(part))
     except Exception:
@@ -1465,6 +1476,353 @@ def download_zim(task):
         if old != dest and m and m.group(1) == item["id"]:
             old.unlink()
     LIB.rescan()
+
+
+# --------------------------------------------------------------------------- bible
+
+# eBible.org has no ZIM files, so a translation is built into one here. That makes it a normal source
+# for search, chat and the article reader. The viewer reads the same file, which holds the whole text
+# once more as JSON, because the pages alone do not say where a paragraph or a poem line starts.
+BIBLE_BASE = CATALOG["bible_base"]
+BIBLE_ITEMS = [it for it in CATALOG["items"] if it.get("bible")]
+BIBLE_JSON = "data/bible.json"
+BIBLE_BOOKS = 66
+BIBLE_MIN_VERSES = 31000  # anything shorter is a broken file, not a Bible
+BIBLE_HITS = 200
+BIBLE_QUERY_CHARS = 100
+BIBLE_LOCK = threading.Lock()
+BIBLE_CACHE = {}  # book id -> (file, text), read on first use
+# Schlachter writes a second verse numbering into the running text: "(03-2) Ach, HERR". The licence
+# asks to say so when text changes, which the catalog credit does.
+BIBLE_ALT_NUMBER = re.compile(r"\(\d{1,4}-\d{1,3}\)")
+# What people type, in lower case with ae, oe, ue and ss and without spaces or dots.
+BIBLE_NAMES = {
+    "GEN": "1mose 1mo gen genesis", "EXO": "2mose 2mo ex exo exodus", "LEV": "3mose 3mo lev levitikus",
+    "NUM": "4mose 4mo num numeri", "DEU": "5mose 5mo dtn deut deuteronomium", "JOS": "josua jos", "JDG": "richter ri",
+    "RUT": "ruth rut", "1SA": "1samuel 1sam", "2SA": "2samuel 2sam", "1KI": "1koenige 1koen 1kge",
+    "2KI": "2koenige 2koen 2kge", "1CH": "1chronik 1chr", "2CH": "2chronik 2chr", "EZR": "esra esr",
+    "NEH": "nehemia neh", "EST": "esther ester est", "JOB": "hiob hi ijob", "PSA": "psalmen psalm ps",
+    "PRO": "sprueche spr", "ECC": "prediger pred kohelet koh", "SNG": "hohelied hoheslied hld hl", "ISA": "jesaja jes",
+    "JER": "jeremia jer", "LAM": "klagelieder klgl", "EZK": "hesekiel hes ezechiel ez", "DAN": "daniel dan",
+    "HOS": "hosea hos", "JOL": "joel", "AMO": "amos am", "OBA": "obadja ob", "JON": "jona", "MIC": "micha mi",
+    "NAM": "nahum nah", "HAB": "habakuk hab", "ZEP": "zephanja zefanja zef", "HAG": "haggai hag", "ZEC": "sacharja sach",
+    "MAL": "maleachi mal", "MAT": "matthaeus matth mt", "MRK": "markus mk", "LUK": "lukas lk", "JHN": "johannes joh",
+    "ACT": "apostelgeschichte apg", "ROM": "roemer roem", "1CO": "1korinther 1kor", "2CO": "2korinther 2kor",
+    "GAL": "galater gal", "EPH": "epheser eph", "PHP": "philipper phil", "COL": "kolosser kol",
+    "1TH": "1thessalonicher 1thess 1thes", "2TH": "2thessalonicher 2thess 2thes", "1TI": "1timotheus 1tim",
+    "2TI": "2timotheus 2tim", "TIT": "titus tit", "PHM": "philemon phlm", "HEB": "hebraeer hebr", "JAS": "jakobus jak",
+    "1PE": "1petrus 1petr", "2PE": "2petrus 2petr", "1JN": "1johannes 1joh", "2JN": "2johannes 2joh",
+    "3JN": "3johannes 3joh", "JUD": "judas jud", "REV": "offenbarung offb off",
+}
+BIBLE_KEYS = {name: book for book, names in BIBLE_NAMES.items() for name in names.split()}
+BIBLE_REF = r"((?:[1-3]\s*\.?\s*)?[^\W\d_]+)\.?"
+BIBLE_PLACE = r"(\d{1,3})(?:\s*[,:]\s*(\d{1,3}))?(?:\s*-\s*\d{1,3})?"
+BIBLE_BOX = re.compile(rf"\s*{BIBLE_REF}(?:\s*{BIBLE_PLACE})?\s*")
+BIBLE_IN_TEXT = re.compile(rf"(?<![\w.]){BIBLE_REF}\s*{BIBLE_PLACE}(?!\w)")
+BIBLE_CUES = re.compile(r"\b(bibel\w*|biblisch\w*|evangelium|evangelien|psalm\w*|apostel\w*|jesus|jesu|christus"
+                        r"|(?:alte|neue)[sn]? testament\w*)\b", re.I)
+BIBLE_NEAR = 2  # verses around a named verse that go to the model
+BIBLE_PAGE_HEAD = "<style>.ref{font-size:.72em;opacity:.55;font-weight:400;margin-right:.35em}.src{opacity:.6;font-size:.9em}</style>"
+
+
+def bible_listing():
+    """The files we would build, named after eBible's last update of each translation."""
+    text = fetch_url(f"{BIBLE_BASE}/translations.csv", timeout=30).decode("utf-8-sig")
+    updated = {row["translationId"]: row["UpdateDate"] for row in csv.DictReader(io.StringIO(text))}
+    return [f"{it['id']}_{updated[it['bible']][:7]}.zim" for it in BIBLE_ITEMS if it["bible"] in updated]
+
+
+def clean_verse(text):
+    text = re.sub(r"\s+", " ", BIBLE_ALT_NUMBER.sub(" ", text)).strip()
+    return re.sub(r" ([,.;:!?])", r"\1", text)
+
+
+def parse_book(node):
+    book = {"id": node.get("id"), "name": "", "title": "", "chapters": []}
+    verse = None
+
+    def add(text):
+        if not text or verse is None or not book["chapters"]:
+            return
+        blocks = book["chapters"][-1]
+        if not blocks:
+            blocks.append(["p", []])
+        rows = blocks[-1][1]
+        if rows and rows[-1][0] == verse:
+            rows[-1][1] += text
+        else:
+            rows.append([verse, text])
+
+    def walk(parent):
+        nonlocal verse
+        for el in parent:
+            if el.tag == "h":
+                book["name"] = (el.text or "").strip().replace("Chonik", "Chronik")  # typo in the source
+            elif el.tag == "toc":
+                if el.get("level") == "1":
+                    book["title"] = (el.text or "").strip()
+            elif el.tag == "c":
+                while len(book["chapters"]) < int(el.get("id")):
+                    book["chapters"].append([])
+                verse = None
+            elif el.tag == "v":
+                verse = int(re.match(r"\d+", el.get("id")).group())
+            elif el.tag == "ve":
+                verse = None
+            elif el.tag in ("p", "q"):
+                if (el.get("style") or "").startswith("mt"):  # the title, known from the toc
+                    add(el.tail)
+                    continue
+                if book["chapters"]:
+                    book["chapters"][-1].append([el.tag, []])
+                add(el.text)
+                walk(el)
+            elif el.tag not in ("id", "f", "x"):  # f and x are notes
+                add(el.text)
+                walk(el)
+            add(el.tail)
+    walk(node)
+    for blocks in book["chapters"]:
+        for block in blocks:
+            block[1] = [[n, cleaned] for n, text in block[1] if (cleaned := clean_verse(text))]
+        blocks[:] = [block for block in blocks if block[1]]
+    return book
+
+
+def parse_usfx(raw):
+    """eBible's XML to [{id, name, title, chapters: [[[kind, [[verse, text], ...]], ...], ...]}]."""
+    books = [parse_book(node) for node in ET.fromstring(raw).iter("book")]
+    verses = sum(len(block[1]) for book in books for blocks in book["chapters"] for block in blocks)
+    if len(books) != BIBLE_BOOKS or verses < BIBLE_MIN_VERSES:
+        raise RuntimeError(f"Die geladene Bibel ist unvollständig: {len(books)} Bücher, {verses} Verse.")
+    return books
+
+
+def chapter_title(book, n):
+    return f"{'Psalm' if book['id'] == 'PSA' else book['name']} {n}"
+
+
+def chapter_verses(blocks):
+    merged = {}
+    for _, rows in blocks:
+        for n, text in rows:
+            merged[n] = f"{merged[n]} {text}" if n in merged else text
+    return merged
+
+
+def chapter_page(book, n, source, before, after):
+    title = html.escape(chapter_title(book, n))
+    verses = "".join(f'<p id="v{v}"><b class="ref">{title},{v}</b> {html.escape(text)}</p>'
+                     for v, text in chapter_verses(book["chapters"][n - 1]).items())
+    link = lambda page, label: f'<a href="{page[0]["id"]}.{page[1]}">{label} {html.escape(chapter_title(*page))}</a>' if page else ""
+    return (f'<!doctype html><html lang="de"><head><meta charset="utf-8"><title>{title}</title>{BIBLE_PAGE_HEAD}</head>'
+            f'<body><h1>{title}</h1><p class="src">{html.escape(source)}</p>{verses}'
+            f'<nav>{link(before, "←")} {link(after, "→")}</nav></body></html>')
+
+
+class ZimPage(Item):
+    def __init__(self, path, title, mimetype, content, front=True):
+        super().__init__()
+        self.path, self.title, self.mimetype, self.content, self.front = path, title, mimetype, content, front
+
+    def get_path(self):
+        return self.path
+
+    def get_title(self):
+        return self.title
+
+    def get_mimetype(self):
+        return self.mimetype
+
+    def get_contentprovider(self):
+        return StringProvider(self.content)
+
+    def get_hints(self):
+        return {Hint.FRONT_ARTICLE: self.front}
+
+
+def write_bible_zim(books, item, part, version):
+    pages = [(book, n) for book in books for n in range(1, len(book["chapters"]) + 1)]
+    contents = "".join(f'<li><a href="{book["id"]}.1">{html.escape(book["name"])}</a></li>' for book in books)
+    start = (f'<!doctype html><html lang="de"><head><meta charset="utf-8"><title>{html.escape(item["title"])}</title></head>'
+             f'<body><h1>{html.escape(item["title"])}</h1><ul>{contents}</ul><p>{html.escape(item["credit"])}</p></body></html>')
+    text = json.dumps({"code": item["bible"], "books": books}, ensure_ascii=False, separators=(",", ":"))
+    with Creator(str(part)).config_indexing(True, "deu").config_verbose(False) as zim:
+        zim.set_mainpath("index")
+        for key, value in (("Title", item["title"]), ("Description", item["desc"]), ("Language", "deu"),
+                           ("Name", item["id"]), ("Creator", item["short"]), ("Publisher", "eBible.org"),
+                           ("Date", f"{version}-01"), ("Tags", "_category:bibel"), ("License", item["credit"])):
+            zim.add_metadata(key, value)
+        icon = (STATIC / "bible.png").read_bytes()
+        try:
+            zim.add_illustration(icon, 96)
+        except TypeError:  # older libzim wants the size first
+            zim.add_illustration(96, icon)
+        zim.add_item(ZimPage("index", item["title"], "text/html", start, front=False))
+        zim.add_item(ZimPage(BIBLE_JSON, item["title"], "application/json", text, front=False))
+        for i, (book, n) in enumerate(pages):
+            before = pages[i - 1] if i else None
+            after = pages[i + 1] if i + 1 < len(pages) else None
+            page = chapter_page(book, n, item["title"], before, after)
+            zim.add_item(ZimPage(f"{book['id']}.{n}", chapter_title(book, n), "text/html", page))
+
+
+def download_bible(task, item):
+    fname = kiwix_latest(item)
+    if not fname:
+        raise RuntimeError("Übersetzung bei eBible.org nicht gefunden")
+    dest = ZIM_DIR / fname
+    if dest.exists():
+        return
+    raw = fetch_url(f"{BIBLE_BASE}/{item['bible']}_usfx.zip", timeout=120)
+    task["total"] = task["done"] = len(raw)
+    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        books = parse_usfx(archive.read(f"{item['bible']}_usfx.xml"))
+    if task["cancel"]:
+        raise Canceled()
+    part = ZIM_DIR / (fname + ".part")
+    part.unlink(missing_ok=True)
+    try:
+        write_bible_zim(books, item, part, VERSION_RE.match(Path(fname).stem).group(2))
+    except Exception:
+        part.unlink(missing_ok=True)
+        raise
+    install_zim(part, dest, item)
+
+
+def bible_text(book):
+    with BIBLE_LOCK:
+        cached = BIBLE_CACHE.get(book.id)
+        if cached and cached[0] == book.path:
+            return cached[1]
+        with book.lock:
+            raw = bytes(book.archive.get_entry_by_path(BIBLE_JSON).get_item().content)
+        data = json.loads(raw)
+        data["by_id"] = {b["id"]: b for b in data["books"]}
+        data["rows"] = None
+        BIBLE_CACHE[book.id] = (book.path, data)
+        return data
+
+
+def bible_key(name):
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        name = name.lower().replace(a, b)
+    return re.sub(r"[\s.]", "", name)
+
+
+def bible_place(data, book_id, chapter, verse):
+    """A place that really exists in this Bible, or None. Books with one chapter count verses directly."""
+    book = data["by_id"].get(book_id)
+    if not book:
+        return None
+    if len(book["chapters"]) == 1 and chapter and not verse:
+        chapter, verse = 1, chapter
+    chapter = chapter or 1
+    if not 1 <= chapter <= len(book["chapters"]):
+        return None
+    if verse and verse not in chapter_verses(book["chapters"][chapter - 1]):
+        return None
+    label = chapter_title(book, chapter) + (f",{verse}" if verse else "")
+    return {"b": book_id, "c": chapter, "v": verse, "label": label}
+
+
+def bible_box_place(data, query):
+    """The search box: "Joh 3,16", "1. Kor 13", "johan". The whole input has to be the place."""
+    m = BIBLE_BOX.fullmatch(query)
+    if not m:
+        return None
+    key = bible_key(m[1])
+    book_id = BIBLE_KEYS.get(key)
+    if not book_id and len(key.lstrip("123")) >= 3:
+        book_id = next((book for name, book in BIBLE_KEYS.items() if name.startswith(key)), None)
+    return book_id and bible_place(data, book_id, int(m[2] or 0), int(m[3] or 0))
+
+
+def bible_named(question):
+    """Places inside a sentence. Short names need capitals and a verse: "Am 3,2" counts, "am 3." does not."""
+    pos = 0
+    while m := BIBLE_IN_TEXT.search(question, pos):
+        key = bible_key(m[1])
+        if key in BIBLE_KEYS and (len(key) >= 4 or (m[3] and m[1][0].isupper())):
+            yield BIBLE_KEYS[key], int(m[2]), int(m[3] or 0)
+            pos = m.end()
+        else:  # "bedeutet 1" must not swallow the 1 of "1. Kor 13"
+            pos = m.start(1) + len(m[1].split()[0])
+
+
+def bible_may_search(book, book_ids, exact, question):
+    """Chapter titles like "Richter 3" match everyday words, so a Bible's text only counts when it is
+    asked for. A named place is answered from that place. The translations are close, one is enough."""
+    if book_ids:
+        return book.id in book_ids and not (exact and book.category == "bibel")
+    if book.category != "bibel":
+        return True
+    first = next((it["id"] for it in BIBLE_ITEMS if LIB.get(it["id"])), None)
+    return not exact and book.id == first and bool(BIBLE_CUES.search(question))
+
+
+def bible_passages(question, max_chars, book_ids=None):
+    """The places a question names, from each translation: (book, path, title, text)."""
+    found = []
+    named = list(bible_named(question))[:2]
+    for it in BIBLE_ITEMS if named else ():
+        book = LIB.get(it["id"])
+        if not book or (book_ids and book.id not in book_ids):
+            continue
+        data = bible_text(book)
+        for book_id, chapter, verse in named:
+            place = bible_place(data, book_id, chapter, verse)
+            if not place:
+                continue
+            verses = chapter_verses(data["by_id"][book_id]["chapters"][place["c"] - 1])
+            title = chapter_title(data["by_id"][book_id], place["c"])
+            near = [v for v in verses if not place["v"] or abs(v - place["v"]) <= BIBLE_NEAR]
+            found.append((book, f"{book_id}.{place['c']}", place["label"],
+                           "\n".join(f"{title},{v} {verses[v]}" for v in near)[:max_chars]))
+    return found
+
+
+def bible_index():
+    books = None
+    translations = []
+    for it in BIBLE_ITEMS:
+        book = LIB.get(it["id"])
+        if book and books is None:
+            books = [{"id": b["id"], "name": b["name"], "title": b["title"],
+                      "verses": [max(chapter_verses(blocks), default=0) for blocks in b["chapters"]]}
+                     for b in bible_text(book)["books"]]
+        translations.append({"id": it["id"], "code": it["bible"], "title": it["title"], "short": it["short"],
+                             "credit": it["credit"], "installed": bool(book)})
+    return {"translations": translations, "books": books or [], "online": CATALOG["bible_online"]}
+
+
+def bible_chapter(book, book_id, chapter):
+    found = bible_text(book)["by_id"].get(book_id)
+    if not found or not chapter.isdigit() or not 1 <= int(chapter) <= len(found["chapters"]):
+        return None
+    return {"blocks": found["chapters"][int(chapter) - 1]}
+
+
+def bible_search(book, query):
+    """A place if the input names one, and the verses: every word must start a word in the verse.
+    Verses with the exact phrase come first."""
+    query = query[:BIBLE_QUERY_CHARS]
+    data = bible_text(book)
+    place = bible_box_place(data, query)
+    words = re.findall(r"[^\W_]+", query.casefold())
+    if sum(map(len, words)) < 2:
+        return {"place": place, "total": 0, "hits": [], "words": []}
+    with BIBLE_LOCK:
+        if data["rows"] is None:
+            data["rows"] = [(b["id"], c, v, text, text.casefold())
+                            for b in data["books"] for c, blocks in enumerate(b["chapters"], 1)
+                            for v, text in chapter_verses(blocks).items()]
+    patterns = [re.compile(r"(?<!\w)" + re.escape(word)) for word in words]
+    phrase = " ".join(words)
+    found = [row for row in data["rows"] if all(p.search(row[4]) for p in patterns)]
+    found.sort(key=lambda row: phrase not in row[4])  # stable, so the Bible's own order stays
+    return {"place": place, "total": len(found), "words": words,
+            "hits": [{"b": b, "c": c, "v": v, "text": text} for b, c, v, text, _ in found[:BIBLE_HITS]]}
 
 
 def queue_download(item_id):
@@ -2354,6 +2712,17 @@ main{{max-width:440px;padding:24px;text-align:center}}h1{{font:600 26px/1.2 Geor
                 "urls": [f"http://{ip}:{CFG['port']}" for ip in lan_ips()],
                 "port": CFG["port"], "content_port": content_port(),
             })
+        if route == "bible":
+            return self.send_json(bible_index())
+        if route in ("bible/chapter", "bible/search"):
+            it = ITEMS.get(f"bibel_{qs.get('t', '')}")
+            book = it and it.get("bible") and LIB.get(it["id"])
+            if not book:
+                return self.send_json({"error": "Diese Übersetzung ist nicht installiert."}, 404)
+            if route == "bible/search":
+                return self.send_json(bible_search(book, qs.get("q", "")))
+            chapter = bible_chapter(book, qs.get("b", ""), qs.get("c", ""))
+            return self.send_json(chapter or {"error": "Dieses Kapitel gibt es nicht."}, 200 if chapter else 404)
         if route == "books":
             cats = {c["id"]: i for i, c in enumerate(CATALOG["categories"])}
             books = sorted((b.info() for b in LIB.all()), key=lambda b: (cats.get(b["category"], 99), b["title"]))

@@ -1,5 +1,18 @@
 {
  "kiwix_base": "https://download.kiwix.org/zim",
+ "bible_base": "https://ebible.org/Scriptures",
+ "bible_online": [
+  {
+   "title": "Gute Nachricht Bibel",
+   "site": "Bibleserver",
+   "url": "https://www.bibleserver.com/GNB/{ref}"
+  },
+  {
+   "title": "BasisBibel",
+   "site": "Deutsche Bibelgesellschaft",
+   "url": "https://www.die-bibel.de/basisbibel"
+  }
+ ],
  "categories": [
   {
    "id": "karten",
@@ -28,6 +41,10 @@
   {
    "id": "buecher",
    "title": "Bücher & Texte"
+  },
+  {
+   "id": "bibel",
+   "title": "Bibel"
   },
   {
    "id": "lernen",
@@ -448,6 +465,32 @@
    "p": "LX",
    "title": "World Factbook",
    "desc": "Daten zu allen Ländern"
+  },
+  {
+   "id": "bibel_deu1912",
+   "folder": "bibel",
+   "bible": "deu1912",
+   "cat": "bibel",
+   "lang": "de",
+   "gb": 0.004,
+   "p": "MLX",
+   "title": "Lutherbibel 1912",
+   "short": "Luther 1912",
+   "desc": "Die klassische Lutherbibel, Altes und Neues Testament",
+   "credit": "Gemeinfrei. Quelle: eBible.org."
+  },
+  {
+   "id": "bibel_deu1951",
+   "folder": "bibel",
+   "bible": "deu1951",
+   "cat": "bibel",
+   "lang": "de",
+   "gb": 0.004,
+   "p": "MLX",
+   "title": "Schlachter-Bibel 1951",
+   "short": "Schlachter 1951",
+   "desc": "Genaue Übersetzung von Franz Eugen Schlachter, überarbeitet 1951",
+   "credit": "© 1951 Genfer Bibelgesellschaft, Lizenz CC BY 4.0. Quelle: eBible.org. Die Marken der abweichenden Verszählung sind ausgeblendet, ein Tippfehler in einem Buchnamen ist korrigiert."
   },
   {
    "id": "gutenberg_de_all",

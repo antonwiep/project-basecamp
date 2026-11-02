@@ -17,6 +17,7 @@ Offline-Wissen und lokale KI für den Mac. Wikipedia, WikiMed, iFixit, Bücher, 
 - Notfall: Der Plan ist sofort da, auch ohne Internet und als PDF zum Ausdrucken. Er folgt den Empfehlungen des BBK. Vier kurze Fragen machen ihn zu eurem: Zuhause, Treffpunkte, Kontakte und was Helfer wissen müssen.
 - Warnungen: NINA, DWD und Hochwasser für deinen Kreis, dazu die Pegel an Regnitz und Main. Abruf nur, wenn du es einschaltest und solange es Netz gibt. Der letzte Stand bleibt offline lesbar und ist als veraltet markiert.
 - Stromsparen: Zeigt den Akkustand und entlädt die KI-Modelle, sodass nur das Wissen läuft.
+- Bibel: Lutherbibel 1912 und Schlachter-Bibel 1951 komplett offline, in einem eigenen Leser. Suche nach Stelle oder Wort, zwei Übersetzungen nebeneinander, Verse markieren, kopieren und dazu fragen. Gute Nachricht und BasisBibel sind geschützt und nur als Link zur Online-Fassung dabei.
 - Code: Ein Agent schreibt und testet Skripte in einem eigenen Ordner. Befehle laufen erst nach deiner Freigabe. Du schaltest im neuen Chat von Chat auf Code um.
 - USB-Stick: Ein Befehl packt App, KI-Modelle und hunderte GB Wissen auf einen Stick. Läuft auf jedem Mac, ohne Installation.
 
@@ -133,6 +134,7 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 
 - Code: MIT, siehe [LICENSE](LICENSE)
 - Inhalte: Kiwix/openZIM, Lizenzen der jeweiligen Projekte (meist CC BY-SA)
+- Bibel: Text von [eBible.org](https://ebible.org). Lutherbibel 1912 ist gemeinfrei. Schlachter-Bibel 1951: © 1951 Genfer Bibelgesellschaft, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Dort sind die Marken der abweichenden Verszählung ausgeblendet und ein Tippfehler in einem Buchnamen korrigiert.
 - Karten: © OpenStreetMap-Mitwirkende (ODbL), Protomaps
 - Ortsnamen: GeoNames (CC BY 4.0)
 - Bibliotheken: MapLibre GL JS (BSD), pmtiles (BSD), Noto Sans (OFL), libzim (GPL, als Python-Paket geladen)

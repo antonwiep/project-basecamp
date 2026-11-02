@@ -1211,6 +1211,87 @@ select.select {
 }
 
 /* one or more clean pages, without the app around them. Paper stays white in dark mode too. */
+/* bible */
+.bible-shell { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.bible-wrap { display: grid; grid-template-columns: 56px minmax(0, 660px) 56px; justify-content: center; gap: 12px; padding: 0 16px; }
+.bible-wrap.wide { grid-template-columns: 56px minmax(0, 1060px) 56px; }
+.bible-side { position: sticky; top: 44vh; align-self: start; display: grid; place-items: center; width: 42px; height: 42px; margin: 44vh auto 0; border-radius: 50%; color: var(--text-3); transition: background .15s, color .15s; }
+.bible-side:hover { background: var(--hover); color: var(--text); }
+.bible-text { --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "New York", Georgia, "Noto Serif", serif; padding: 26px 0 56px; font: 400 var(--bible-size, 19px)/1.72 var(--serif); color: var(--text); font-feature-settings: "kern", "liga", "onum"; text-rendering: optimizeLegibility; }
+.bible-book-title { margin-bottom: 26px; text-align: center; font-size: .78em; line-height: 1.4; letter-spacing: .09em; font-variant: small-caps; color: var(--text-3); }
+.bible-text sup { font: 500 .58em/0 var(--font); vertical-align: .62em; margin-right: .22em; color: var(--text-3); font-variant-numeric: tabular-nums; user-select: none; }
+.bible-text [data-v] { cursor: pointer; border-radius: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background .15s; }
+.bible-text [data-v]:hover { background: color-mix(in srgb, var(--text) 4%, transparent); }
+.bible-text [data-v].on, .bible-text [data-v].on:hover { background: color-mix(in srgb, var(--text) 11%, transparent); }
+.bible-text [data-v].hit { animation: bible-hit 3.2s var(--ease) both; }
+@keyframes bible-hit { 0%, 55% { background: color-mix(in srgb, var(--text) 13%, transparent); } 100% { background: transparent; } }
+.bible-text.flow { hyphens: auto; -webkit-hyphens: auto; text-wrap: pretty; }
+.bf { margin: 0 0 .85em; }
+.bf.b-q { padding-left: 1.4em; text-indent: -1.4em; margin-bottom: .25em; }
+.bc { float: left; margin: .05em .14em 0 0; font-size: 3.5em; line-height: .86; font-weight: 400; color: var(--text); font-feature-settings: "lnum"; }
+.bf.b-q .bc { text-indent: 0; }
+.bc-big { margin-bottom: 18px; text-align: center; font-size: 3.2em; line-height: 1; font-feature-settings: "lnum"; }
+.bl { position: relative; margin: 0 0 .42em; padding: 0 .3em 0 2.1em; }
+.bl sup { position: absolute; left: 0; width: 1.65em; top: .9em; text-align: right; margin: 0; }
+.bp-head { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 26px; position: sticky; top: 0; padding: 10px 0; background: var(--bg); font: 600 13px var(--font); color: var(--text-2); z-index: 1; }
+.bp-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 26px; padding: 9px 12px 9px 0; border-top: 1px solid var(--border); font-size: .92em; line-height: 1.6; }
+.bp-row sup { vertical-align: baseline; font-size: 12px; line-height: 1.9; margin: 0; text-align: right; }
+.bible-pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 38px; padding-top: 18px; border-top: 1px solid var(--border); font: 500 14px var(--font); }
+.bible-pager a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border-radius: 999px; color: var(--text-2); }
+.bible-pager a:hover { background: var(--hover); color: var(--text); }
+.bible-credit { margin-top: 24px; text-align: center; font: 400 12px/1.5 var(--font); color: var(--text-3); }
+.bible-bar { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; max-width: calc(100% - 24px); padding: 5px 6px 5px 16px; border: 1px solid var(--border-2); border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-lg); font-size: 14px; white-space: nowrap; animation: pop .14s var(--ease); z-index: 5; }
+.bible-bar b { margin-right: 8px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.bible-menu { min-width: 280px; }
+.bible-menu a.menu-item { text-decoration: none; }
+.bible-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)); gap: 4px; }
+.bible-menu .bible-grid { padding: 2px 6px 8px; max-height: 300px; overflow-y: auto; }
+.bible-grid a { display: grid; place-items: center; height: 38px; border-radius: 10px; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--text-2); }
+.bible-grid a:hover { background: var(--hover); color: var(--text); }
+.bible-grid a.on { background: var(--primary); color: var(--primary-ink); }
+.bible-home .page-head .grow { flex: 1; min-width: 0; }
+.bible-empty { text-align: center; padding-top: 16vh; }
+.bible-empty h1 { font: 600 34px/1.15 var(--font-display); letter-spacing: -.035em; }
+.bible-empty p { margin: 10px 0 18px; color: var(--text-3); font-size: 15px; }
+.bible-search { height: 46px; margin-bottom: 20px; box-shadow: none; }
+.bible-continue { display: flex; align-items: center; gap: 10px; padding: 13px 16px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: 14px; background: var(--card); font-size: 14.5px; transition: background .15s; }
+.bible-continue:hover { background: var(--hover); }
+.bible-continue span { color: var(--text-3); }
+.bible-continue b { flex: 1; font-weight: 600; }
+.bible-part { margin: 30px 0 14px; font: 400 25px/1.2 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; color: var(--text); }
+.bible-group { margin-bottom: 18px; }
+.bible-group .group-title { margin-left: 0; color: var(--text-3); font-weight: 500; }
+.bible-books { display: grid; grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 6px; }
+.bible-book { height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); font-size: 14px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); transition: background .15s; }
+.bible-book:hover { background: var(--hover); }
+.bible-book[aria-expanded=true] { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.bible-group > .bible-grid { margin-top: 8px; padding: 8px; border: 1px solid var(--border); border-radius: 14px; }
+.bible-hit { display: block; padding: 12px 4px; border-bottom: 1px solid var(--border); font-size: 15px; line-height: 1.55; }
+.bible-hit:hover b { text-decoration: underline; text-underline-offset: 3px; }
+.bible-hit b { display: block; margin-bottom: 2px; font-size: 13px; font-weight: 600; color: var(--text-2); }
+.bible-hit span { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; font-size: 16.5px; }
+.bible-hit mark { background: color-mix(in srgb, var(--text) 14%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+.bible-hit.place { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding: 12px 16px; border: 1px solid var(--border-2); border-radius: 14px; background: var(--card); }
+.bible-hit.place b { flex: 1; margin: 0; font-size: 15px; color: var(--text); }
+.bible-hit.place span { font: 400 13px var(--font); color: var(--text-3); }
+@media (max-width: 760px) {
+  .bible-wrap, .bible-wrap.wide { grid-template-columns: minmax(0, 1fr); padding: 0 20px; gap: 0; }
+  .bible-wrap > .bible-side, .bible-wrap > span { display: none; }
+  .topbar:has(#bChapter) .only-collapsed, #topLeft > .icon-btn, .bible-year, .bible-ask span { display: none; }
+  #topLeft:has(#bChapter) { flex: 0 1 auto; }
+  #topLeft:has(#bChapter) .picker { min-width: 0; }
+  #topRight:has(#bAsk) { flex: none; }
+  #bChapter { max-width: 100%; }
+  .bible-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .bible-ask { padding: 0 10px; }
+  .menu.bible-menu { position: fixed; left: 12px; right: 12px; top: 56px; width: auto; min-width: 0; max-height: calc(100dvh - 72px); overflow-y: auto; }
+  .bp-head { display: none; }
+  .bp-row { grid-template-columns: 24px minmax(0, 1fr); gap: 2px 8px; }
+  .bp-row .bp-b { grid-column: 2; color: var(--text-2); font-size: .9em; }
+  .bible-bar { padding-left: 12px; bottom: 12px; }
+  .bible-bar .btn { padding: 0 8px; font-size: 0; gap: 0; }
+}
+
 @media print {
   :root {
     color-scheme: light;
