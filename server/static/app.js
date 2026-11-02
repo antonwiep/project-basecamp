@@ -1890,11 +1890,6 @@ const currentPlan = d => (d.plan?.trim() ? d.plan : fullTemplate(d.setup || {}))
 
 const hasPersonalData = d => !!(d.contacts?.length || d.people?.length || d.plan?.trim() || Object.values(d.setup || {}).some(Boolean));
 
-// Local models wrote dangerous advice, even with tight rules: insulin in a cellar that floods, gas
-// heaters indoors, breathing in smoke. So a model only adds this one section, and its heading says
-// what it is, on paper too. The code puts the checked template above it, which a model cannot change.
-const AI_HEADING = '## Vorschläge der KI, ungeprüft';
-
 const householdLines = s => [
   +s.adults ? `- Erwachsene: ${s.adults}` : '',
   +s.kids ? `- Kinder: ${s.kids}` : '',
@@ -1902,6 +1897,8 @@ const householdLines = s => [
   s.needs?.trim() ? `- Besonderes: ${s.needs.trim()}` : '',
 ].filter(Boolean);
 
+// Only for copying into an AI the person picks. There is no button for the local model on purpose: it
+// wrote dangerous advice even with tight rules, like insulin in a cellar that floods or gas heaters indoors.
 function planPrompt(setup) {
   return `Hier ist ein Haushalt in Deutschland:
 
@@ -1916,16 +1913,6 @@ Regeln:
 - Nur vernünftige, allgemein bekannte Ratschläge. Bist du unsicher, lass den Punkt weg.
 - Erfinde keine Telefonnummern, Namen, Adressen oder Orte.
 - Keine Überschriften, keine Einleitung, kein Schluss.`;
-}
-
-// Keeps only plain points, and drops whatever looks like a made-up phone number.
-function cleanPoints(text) {
-  const bullet = /^\s*(?:[-*•]|\d+[.)])\s+/;
-  return text.split('\n').filter(l => bullet.test(l))
-    .map(l => l.replace(bullet, '').replace(/\*\*/g, '').trim())
-    .filter(l => l && !/\d[\d /-]{4,}\d/.test(l))
-    .slice(0, 10)
-    .map(l => `- ${l}`);
 }
 
 const NOTFALL_STEPS = [
@@ -2129,22 +2116,16 @@ function renderNotfallStep(data, key, flow) {
   leaveNotfall = saver.now;
 }
 
-async function renderPlanEditor(data) {
+function renderPlanEditor(data) {
   data.setup = data.setup || {};
-  if (!state.models) await loadModels().catch(() => {});
-  if (state.view !== 'notfall') return;
   $('#topLeft').innerHTML = `<a class="btn ghost sm" href="#/notfall">${ic('arrowLeft', 15)}Notfall</a>`;
   view.innerHTML = `<div class="page notfall-step"><div class="page-inner narrow">
     <h1>Plan anpassen</h1>
     <p class="step-note">Kurze Stichpunkte reichen. <code class="path">## Titel</code> macht eine Überschrift, <code class="path">- </code> einen Punkt.</p>
     <textarea class="field" id="ePlan" rows="20" maxlength="30000" aria-label="Plan"></textarea>
-    <p class="plan-note" id="pNote" hidden>Die Vorschläge der KI können falsch oder gefährlich sein. Prüf jeden Punkt, lösch, was nicht passt, und ändere danach die Überschrift.</p>
     <details class="plan-ai"><summary>Mit KI ergänzen</summary>
-      <p class="faint sm">Die KI hängt einen eigenen Abschnitt mit ungeprüften Vorschlägen an, der Rest bleibt, wie er ist. Lokale Modelle schreiben hier auch Falsches und Gefährliches. Der Prompt enthält nur die Antworten zu eurem Zuhause, ohne Adresse. Fügst du ihn in eine Online-KI ein, verlassen sie deinen Mac.</p>
-      <div class="plan-tools">
-        <button type="button" class="btn" id="pGenerate" ${state.power?.on ? 'disabled title="Stromsparen ist an"' : ''}>${ic('sparkle', 15)}Mit lokaler KI ergänzen</button>
-        <button type="button" class="btn" id="pCopy">${ic('copy', 15)}Prompt kopieren</button>
-      </div>
+      <p class="faint sm">Kopier den Prompt und füg ihn in eine KI deiner Wahl ein. Er enthält nur die Antworten zu eurem Zuhause, ohne Adresse. Bei einer Online-KI verlassen sie deinen Mac. KI schreibt hier auch Falsches und Gefährliches, also prüf jeden Punkt, bevor du ihn übernimmst.</p>
+      <button type="button" class="btn" id="pCopy">${ic('copy', 15)}Prompt kopieren</button>
     </details>
     <div class="step-foot">
       <button type="button" class="btn ghost" id="pReset">Zurück zur Vorlage</button>
@@ -2154,7 +2135,6 @@ async function renderPlanEditor(data) {
     </div>
   </div></div>`;
   const plan = $('#ePlan');
-  const note = $('#pNote');
   const reset = $('#pReset');
   const saver = emergencySaver(data);
   plan.value = currentPlan(data);
@@ -2177,62 +2157,12 @@ async function renderPlanEditor(data) {
     clearTimeout(armed);
     armed = 0;
     reset.textContent = 'Zurück zur Vorlage';
-    note.hidden = true;
     plan.value = fullTemplate(data.setup);
     sync();
   };
   $('#pCopy').onclick = () => copyText(planPrompt(data.setup));
 
-  // Adds to the plan and replaces only an earlier version of its own section.
-  let ctrl = null;
-  const genBtn = $('#pGenerate');
-  const genLabel = genBtn.innerHTML;
-  genBtn.onclick = async () => {
-    if (ctrl) return ctrl.abort();
-    if (!householdLines(data.setup).length) return toast('Beantworte zuerst die Fragen zu eurem Zuhause.');
-    const model = currentModel();
-    if (!model) return toast('Kein KI-Modell installiert.');
-    const before = plan.value;
-    const own = before.replace(/(^|\n)## Vorschläge der KI, ungeprüft\n[\s\S]*?(?=\n## |$)/, '').trim();
-    const base = `${own}\n\n${AI_HEADING}\n`;
-    ctrl = new AbortController();
-    genBtn.textContent = 'Stoppen';
-    reset.disabled = true;
-    plan.readOnly = true;
-    note.hidden = true;
-    plan.value = `${base}Einen Moment …`;
-    plan.scrollTop = plan.scrollHeight;
-    let text = '';
-    let finished = false;
-    let failed = '';
-    try {
-      await streamNdjson('/api/chat', { model, mode: 'plain', think: false, memory: false, messages: [{ role: 'user', content: planPrompt(data.setup) }] }, ctrl.signal, ev => {
-        if (ev.t === 'tok') { text += ev.c; plan.value = base + text; plan.scrollTop = plan.scrollHeight; }
-        else if (ev.t === 'done') finished = true;
-        else if (ev.t === 'error') failed = ev.c;
-      });
-    } catch (e) {
-      if (e.name !== 'AbortError') failed = e.message;
-    }
-    const stopped = ctrl.signal.aborted;
-    ctrl = null;
-    plan.readOnly = false;
-    reset.disabled = false;
-    genBtn.innerHTML = genLabel;
-    const points = finished && !failed ? cleanPoints(text) : [];
-    if (points.length) {
-      plan.value = base + points.join('\n');
-      sync();
-      note.hidden = false;
-      return;
-    }
-    plan.value = before;
-    if (!stopped) toast(failed || 'Die KI hat keine brauchbaren Punkte geliefert.');
-  };
-  leaveNotfall = () => {
-    ctrl?.abort();
-    return saver.now();
-  };
+  leaveNotfall = saver.now;
 }
 
 /* ================================================================ bible */

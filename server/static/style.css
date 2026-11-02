@@ -1174,8 +1174,6 @@ select.select {
 .plan-ai { margin-top: 14px; font-size: 14px; }
 .plan-ai summary { cursor: pointer; color: var(--text-2); }
 .plan-ai p { margin: 8px 0 10px; line-height: 1.5; }
-.plan-tools { display: flex; flex-wrap: wrap; gap: 8px; }
-.plan-note { margin-top: 10px; font-size: 13px; color: var(--amber); }
 #pReset[hidden] { display: none; }
 .kv { justify-content: space-between; gap: 18px; }
 .kv > b { flex: none; font-weight: 500; }
