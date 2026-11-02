@@ -228,6 +228,11 @@ document.addEventListener('keydown', onKey);
 function closeMenus() {
   $$('.menu').forEach(m => m.remove());
 }
+// .view clips anything above it, so an upward menu only gets the room over its anchor and scrolls inside
+function fitMenuUp(menu, anchor) {
+  const room = anchor.getBoundingClientRect().top - $('#view').getBoundingClientRect().top - 16;
+  menu.style.maxHeight = `min(70vh, ${room}px)`;
+}
 document.addEventListener('mousedown', e => {
   if (!e.target.closest('.menu, .picker-btn, .opts-btn')) closeMenus();
 });
@@ -314,6 +319,7 @@ function route() {
   $('#topLeft').innerHTML = '';
   $('#topRight').innerHTML = '';
   closeMenus();
+  renderChatList();
   if (innerWidth <= 900) setSidebar(false);
   if (page === 'read') return showReader(decodeURIComponent(parts[1] || ''), parts.slice(2).map(decodeURIComponent).join('/'));
   if (page === 'library') return showLibrary();
@@ -808,6 +814,7 @@ async function mountModelPicker(code = false) {
       ${items.length ? '<div class="menu-sep"></div>' : ''}
       <a class="menu-item" href="#/settings?tab=models"><div class="grow"><b>${items.length ? 'Modelle verwalten' : 'Modell laden'}</b><small>Empfehlungen für deinen Mac</small></div>${ic('chevRight', 16)}</a>`;
     slot.appendChild(menu);
+    fitMenuUp(menu, slot);
     $$('[data-model]', menu).forEach(b => (b.onclick = () => {
       store.set(code ? 'codeModel' : 'model', b.dataset.model);
       closeMenus();
@@ -843,6 +850,7 @@ function composerOptions(slot, options, onChange) {
         <div class="grow"><b>${o.title}</b><small>${o.desc}</small></div>
         <span class="switch"></span></button>`).join('');
     slot.appendChild(menu);
+    fitMenuUp(menu, slot);
     $$('[data-opt]', menu).forEach(b => (b.onclick = () => {
       const o = find(b.dataset.opt);
       store.set(o.key, !stored(o));

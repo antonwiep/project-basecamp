@@ -874,7 +874,7 @@ select.select {
   .turn.user { max-width: 90%; }
   .row { flex-wrap: wrap; }
   .menu { min-width: 0; width: calc(100vw - 24px); }
-  .opts-menu { width: min(300px, calc(100vw - 96px)); }
+  .opts-menu, .model-slot .menu { width: min(300px, calc(100vw - 96px)); }
 }
 
 /* ------------------------------------------------------------ maps */
