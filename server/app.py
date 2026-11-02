@@ -2169,10 +2169,11 @@ def code_books():
 
 
 def workspace(path):
-    """A folder inside the user's home that the agent may work in."""
+    """A folder the agent may work in: inside the user's home, or inside Basecamp's own
+    code folder, which is outside the home when Basecamp runs from a USB stick."""
     home = Path.home().resolve()
     p = Path(os.path.expanduser(path or "")).resolve()
-    if not path or not p.is_dir() or p == home or home not in p.parents:
+    if not path or not p.is_dir() or not (home in p.parents or CODE_DIR.resolve() in p.parents):
         raise ValueError("Ungültiger Ordner. Er muss in deinem Benutzerordner liegen.")
     return p
 
@@ -2189,7 +2190,7 @@ def tree(root, base, depth=2, limit=200):
         for e in entries:
             if len(lines) >= limit:
                 return
-            if e.name in skip:
+            if e.name in skip or e.name.startswith("._"):  # macOS helper files on an ExFAT stick
                 continue
             rel = e.relative_to(base).as_posix()
             if e.is_dir():
