@@ -147,6 +147,8 @@ const ICONS = {
   arrowLeft: '<path d="M19 12H5"/><path d="m11 18-6-6 6-6"/>',
   list: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/>',
   type: '<path d="M4 7V5h11v2"/><path d="M9.5 5v14"/><path d="M7.5 19h4"/><path d="M14 13v-1.5h6V13"/><path d="M17 11.5V19"/><path d="M15.8 19h2.4"/>',
+  brain: '<path d="M12 5a3 3 0 1 0-6 .1 4 4 0 0 0-2.5 5.8 4 4 0 0 0 .6 6.6A4 4 0 1 0 12 18z"/><path d="M12 5a3 3 0 1 1 6 .1 4 4 0 0 1 2.5 5.8 4 4 0 0 1-.6 6.6A4 4 0 1 1 12 18z"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18"/>',
 };
 const LOGO = (size = 22) =>
@@ -177,6 +179,7 @@ const state = {
   status: null,
   view: '',
   chat: null, // current chat controller
+  projects: null, // null: not available here, e.g. on a phone in the WLAN
 };
 const live = new Map(); // chat id -> controller, while an answer streams
 const deleted = new Set(); // chats removed while they were still streaming
@@ -192,6 +195,12 @@ async function loadModels() {
   return state.models;
 }
 const bookById = id => state.books.find(b => b.id === id);
+async function loadProjects() {
+  const r = await api.get('projects').catch(() => ({}));
+  state.projects = r.projects || null;
+  $('#navProjects').hidden = !state.projects;
+}
+const projectById = id => state.projects?.find(p => p.id === id);
 
 /* ================================================================ shell */
 
@@ -230,8 +239,13 @@ function closeMenus() {
 }
 // .view clips anything above it, so an upward menu only gets the room over its anchor and scrolls inside
 function fitMenuUp(menu, anchor) {
-  const room = anchor.getBoundingClientRect().top - $('#view').getBoundingClientRect().top - 16;
-  menu.style.maxHeight = `min(70vh, ${room}px)`;
+  const box = anchor.getBoundingClientRect();
+  const area = $('#view').getBoundingClientRect();
+  const above = box.top - area.top - 16;
+  const below = area.bottom - box.bottom - 16;
+  // a composer near the top of a page has no room above it, so its menus open downward
+  if (above < 260 && below > above) menu.classList.remove('up');
+  menu.style.maxHeight = `min(70vh, ${menu.classList.contains('up') ? above : below}px)`;
 }
 document.addEventListener('mousedown', e => {
   if (!e.target.closest('.menu, .picker-btn, .opts-btn')) closeMenus();
@@ -268,6 +282,11 @@ const Chats = {
     live.get(id)?.stop?.();
     store.set('chats', Chats.all().filter(c => c.id !== id));
   },
+  // the chats of a deleted project stay, as normal chats
+  unlinkProject(project) {
+    store.set('chats', Chats.all().map(c => (c.project === project ? { ...c, project: null } : c)));
+    for (const c of live.values()) if (c.chat.project === project) c.chat.project = null;
+  },
 };
 
 function renderChatList() {
@@ -289,7 +308,7 @@ function renderChatList() {
     <div class="sb-group">${label}</div>
     ${items.map(c => `
       <a class="sb-chat ${c.id === active ? 'active' : ''}" href="#/${c.kind === 'code' ? 'code' : 'c'}/${c.id}">
-        ${c.kind === 'code' ? `<i class="sb-kind" title="Basecamp Code">${ic('terminal', 14)}</i>` : ''}<span>${esc(c.title || 'Neuer Chat')}</span>
+        ${c.kind === 'code' ? `<i class="sb-kind" title="Basecamp Code">${ic('terminal', 14)}</i>` : projectById(c.project) ? `<i class="sb-kind" title="Projekt: ${esc(projectById(c.project).name)}">${ic('folder', 14)}</i>` : ''}<span>${esc(c.title || 'Neuer Chat')}</span>
         <button data-del="${c.id}" title="Löschen">${ic('trash', 15)}</button>
       </a>`).join('')}`).join('');
   $$('[data-del]', el).forEach(b => (b.onclick = e => {
@@ -315,7 +334,7 @@ function route() {
     mapState.map = null;
     mapState.observer?.disconnect();
   }
-  $$('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === page));
+  $$('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === (page === 'p' ? 'projects' : page)));
   $('#topLeft').innerHTML = '';
   $('#topRight').innerHTML = '';
   closeMenus();
@@ -323,6 +342,8 @@ function route() {
   if (innerWidth <= 900) setSidebar(false);
   if (page === 'read') return showReader(decodeURIComponent(parts[1] || ''), parts.slice(2).map(decodeURIComponent).join('/'));
   if (page === 'library') return showLibrary();
+  if (page === 'projects') return showProjects();
+  if (page === 'p') return showProject(parts[1]);
   if (page === 'map') return showMap(params);
   if (page === 'code') return showCode(parts[1]);
   if (page === 'settings') return showSettings(params.get('tab') || 'content');
@@ -787,7 +808,7 @@ function modelMeta(name) {
 
 async function mountModelPicker(code = false) {
   const m = state.models || (await loadModels());
-  if (!(code ? ['code'] : ['', 'c']).includes(state.view)) return;
+  if (!(code ? ['code'] : ['', 'c', 'p']).includes(state.view)) return;
   const slot = state.chat && $('.model-slot', state.chat.root);
   if (!slot) return;
   const cur = currentModel(code);
@@ -866,10 +887,10 @@ function composerOptions(slot, options, onChange) {
   };
 }
 
-function createChat(saved) {
+function createChat(saved, project = null) {
   const chat = saved
     ? { ...saved, messages: saved.messages.map(m => ({ ...m })) }
-    : { id: crypto.randomUUID(), title: '', created: Date.now(), messages: [], article: null };
+    : { id: crypto.randomUUID(), title: '', created: Date.now(), messages: [], article: null, project };
   const root = document.createElement('div');
   root.className = 'chat';
   root.innerHTML = `
@@ -900,9 +921,11 @@ function createChat(saved) {
   const fileInput = $('input[type=file]', root);
   let images = [];
   let ctrl = null;
+  let turns = 0; // answers and learning steps still running
 
   const opts = composerOptions($('.opts-slot', root), [
     { key: 'kb', def: true, icon: 'book', title: 'Bibliothek', desc: 'Antworten mit Quellen aus deiner Bibliothek' },
+    { key: 'memory', def: true, icon: 'brain', title: 'Gedächtnis', desc: 'Merkt sich Fakten aus dem Chat und nutzt sie', hidden: !state.projects },
     thinkOption('think'),
   ]);
   $('[data-a=attach]', root).onclick = () => fileInput.click();
@@ -1034,6 +1057,7 @@ function createChat(saved) {
     }
     html += `<div class="md ${streaming && m.content ? 'caret' : ''}">${md(m.content || '')}</div>`;
     if (m.error) html += `<div class="err">${esc(m.error)}</div>`;
+    if (m.memory) html += memoryNote(m.memory, chat.project);
     if (!streaming && (m.content || m.error)) {
       const s = m.stats;
       html += `<div class="actions">
@@ -1116,15 +1140,26 @@ function createChat(saved) {
     if (first) {
       history.replaceState(null, '', '#/c/' + chat.id);
       state.view = 'c';
+      if (root.classList.contains('embedded')) { // started on a project page: the chat takes over the view
+        root.classList.remove('embedded');
+        view.replaceChildren(root);
+        mountProjectChip();
+        ta.focus();
+      }
     }
     renderChatList();
+    turns++;
     live.set(chat.id, api_);
+    const project = chat.project || null;
+    const useMemory = opts.on('memory');
 
     const payload = {
       model,
       mode,
       article: chat.article ? { book: chat.article.book, path: chat.article.path } : null,
       think: opts.on('think'),
+      project,
+      memory: useMemory,
       messages: chat.messages.slice(0, -1).map(m => ({
         role: m.role,
         content: m.content,
@@ -1197,8 +1232,18 @@ function createChat(saved) {
     autosize();
     paintBot(bot, false);
     if (!deleted.has(chat.id)) Chats.save(chat);
-    live.delete(chat.id);
     if (state.chat === api_) renderChatList();
+    if (useMemory && bot.content && !bot.error) await learnFrom(bot, text, model, project);
+    if (--turns === 0) live.delete(chat.id);
+  }
+
+  // runs after the answer, so it never delays it
+  async function learnFrom(bot, text, model, project) {
+    const r = await api.post('memory/learn', { project, model, text }).catch(() => null);
+    if (!r?.added?.length && !r?.removed?.length) return;
+    bot.memory = { added: r.added.map(f => f.text), removed: r.removed.map(f => f.text) };
+    paintBot(bot, false);
+    if (!deleted.has(chat.id)) Chats.save(chat);
   }
 
   const api_ = {
@@ -1207,6 +1252,11 @@ function createChat(saved) {
     send,
     applyCaps,
     attachArticle,
+    setProject(id) {
+      chat.project = id;
+      if (chat.messages.length) Chats.save(chat);
+      renderChatList();
+    },
     stop: () => ctrl?.abort(),
     focus: () => setTimeout(() => { autosize(); ta.focus(); }, 0),
     streaming: () => !!ctrl,
@@ -1233,6 +1283,7 @@ async function showChat(id, q, articleParam) {
   state.chat = c;
   view.replaceChildren(c.root);
   renderChatList();
+  mountProjectChip();
   await mountModelPicker();
   c.applyCaps();
   if (pendingArticle) {
@@ -1244,6 +1295,255 @@ async function showChat(id, q, articleParam) {
     history.replaceState(null, '', '#/');
     c.send(q);
   } else c.focus();
+}
+
+/* ================================================================ projects and memory */
+
+const memoryHref = project => (project ? `#/p/${project}` : '#/settings?tab=memory');
+
+function memoryNote(mem, project) {
+  const list = items => items.map(esc).join(' · ');
+  const parts = [mem.added.length && `Gemerkt: ${list(mem.added)}`, mem.removed.length && `Vergessen: ${list(mem.removed)}`].filter(Boolean);
+  return `<a class="mem-note" href="${memoryHref(project)}" title="Gedächtnis ansehen">${ic('brain', 14)}<span>${parts.join(' · ')}</span></a>`;
+}
+
+// Shows which project the open chat belongs to, and moves it to another one.
+// Stays away until there is a project to choose.
+function mountProjectChip() {
+  const slot = $('#topLeft');
+  const c = state.chat;
+  if (!state.projects?.length || !c?.setProject) return;
+  const cur = projectById(c.chat.project);
+  slot.innerHTML = `<div class="picker project-chip"><button type="button" class="picker-btn" title="Projekt wählen">${ic('folder', 16)}<span>${esc(cur?.name || 'Kein Projekt')}</span>${ic('chevDown', 15)}</button></div>`;
+  const picker = $('.picker', slot);
+  $('.picker-btn', slot).onclick = () => {
+    if ($('.menu', slot)) return closeMenus();
+    closeMenus();
+    const item = (id, name, sub) => `<button type="button" class="menu-item ${(id || null) === (cur?.id || null) ? 'on' : ''}" data-project="${id}">
+      <div class="grow"><b>${esc(name)}</b><small>${esc(sub)}</small></div><span class="check">${ic('check', 16)}</span></button>`;
+    const menu = document.createElement('div');
+    menu.className = 'menu';
+    menu.innerHTML = `
+      <div class="menu-label">Das Gedächtnis ist je Projekt getrennt</div>
+      ${item('', 'Kein Projekt', 'Allgemeines Gedächtnis')}
+      ${state.projects.map(p => item(p.id, p.name, `${p.facts} ${p.facts === 1 ? 'Fakt' : 'Fakten'}`)).join('')}
+      <div class="menu-sep"></div>
+      ${cur ? `<a class="menu-item" href="#/p/${cur.id}"><div class="grow"><b>Projekt öffnen</b></div>${ic('chevRight', 16)}</a>` : ''}
+      <a class="menu-item" href="#/projects"><div class="grow"><b>Alle Projekte</b></div>${ic('chevRight', 16)}</a>`;
+    picker.appendChild(menu);
+    $$('[data-project]', menu).forEach(b => (b.onclick = () => {
+      closeMenus();
+      c.setProject(b.dataset.project || null);
+      mountProjectChip();
+    }));
+    $$('a', menu).forEach(a => (a.onclick = closeMenus));
+  };
+}
+
+async function showProjects() {
+  if (panel.book) closePanel();
+  await loadProjects();
+  if (state.view !== 'projects') return;
+  if (!state.projects) {
+    location.hash = '#/';
+    return;
+  }
+  const chats = Chats.all();
+  const facts = n => `${n} ${n === 1 ? 'Fakt' : 'Fakten'}`;
+  const count = p => {
+    const n = chats.filter(c => c.project === p.id).length;
+    return `${n} ${n === 1 ? 'Chat' : 'Chats'} · ${facts(p.facts)}`;
+  };
+  view.innerHTML = `<div class="page"><div class="page-inner narrow">
+    <div class="page-head"><div><h1>Projekte</h1><p>Jedes Projekt hat eigene Anweisungen, eigene Chats und ein eigenes Gedächtnis.</p></div></div>
+    <form class="ms-input mem-add" id="newProject">
+      ${ic('plus', 17)}<input placeholder="Name des neuen Projekts" maxlength="80" aria-label="Name des neuen Projekts">
+      <button class="btn primary sm" disabled>Erstellen</button>
+    </form>
+    ${state.projects.length ? `<div class="group">${state.projects.map(p => `
+      <a class="row link" href="#/p/${p.id}">${ic('folder', 20)}
+        <div class="grow"><b>${esc(p.name)}</b><small>${count(p)}</small></div>${ic('chevRight', 16)}</a>`).join('')}</div>` : ''}
+  </div></div>`;
+  const form = $('#newProject');
+  const input = $('input', form);
+  input.oninput = () => ($('button', form).disabled = !input.value.trim());
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const r = await api.post('projects/save', { name: input.value });
+    if (r.project) location.hash = `#/p/${r.project.id}`;
+    else toast(r.error || 'Das hat nicht geklappt.');
+  };
+  input.focus();
+}
+
+async function showProject(id) {
+  if (panel.book) closePanel();
+  if (!state.books.length) await loadBooks();
+  await loadProjects();
+  if (location.hash !== `#/p/${id}`) return; // the user moved on while it loaded
+  const p = projectById(id);
+  if (!p) {
+    location.hash = '#/projects';
+    return;
+  }
+  $('#topLeft').innerHTML = `<a class="btn ghost sm" href="#/projects">${ic('arrowLeft', 15)}Projekte</a>`;
+  const c = createChat(null, id);
+  c.root.classList.add('embedded');
+  state.chat = c;
+  const chats = Chats.all().filter(x => x.project === id);
+  view.innerHTML = `<div class="page"><div class="page-inner narrow">
+    <div class="page-head project-head">
+      <h1 id="pName">${esc(p.name)}</h1>
+      <button class="icon-btn" id="pRename" title="Umbenennen">${ic('edit', 17)}</button>
+    </div>
+    <div id="pComposer"></div>
+    <div class="group-title">Chats</div>
+    ${chats.length ? `<div class="group">${chats.map(x => `
+      <a class="row link" href="#/c/${x.id}"><div class="grow"><b>${esc(x.title || 'Neuer Chat')}</b><small>${new Date(x.updated || x.created).toLocaleDateString('de-DE')}</small></div>${ic('chevRight', 16)}</a>`).join('')}</div>`
+      : '<p class="faint sm section-note">Noch keine Chats. Schreib oben los.</p>'}
+    <div class="group-title">Anweisungen <span>Gelten für jeden Chat in diesem Projekt</span></div>
+    <textarea class="field" id="pInstructions" rows="4" maxlength="4000" placeholder="Zum Beispiel: Antworte kurz und in Stichpunkten. Es geht um unseren Hausbau in Kiel.">${esc(p.instructions)}</textarea>
+    <div class="group-title">Gedächtnis <span>Nur Chats in diesem Projekt sehen diese Fakten</span></div>
+    <div id="pMemory"></div>
+    <div class="group-title">Projekt löschen</div>
+    <div class="group"><div class="row"><div class="grow"><b>Anweisungen und Gedächtnis löschen</b><small>Die Chats bleiben und werden zu normalen Chats.</small></div>
+      <button class="btn danger" id="pDelete">Löschen</button></div></div>
+  </div></div>`;
+  $('#pComposer').appendChild(c.root);
+  renderChatList();
+  mountModelPicker();
+  c.applyCaps();
+  c.focus();
+
+  const saveProject = fields => api.post('projects/save', { id, ...fields });
+  const instructions = $('#pInstructions');
+  let timer = 0;
+  let savedText = p.instructions;
+  const saveInstructions = () => {
+    clearTimeout(timer);
+    if (instructions.value === savedText) return;
+    savedText = instructions.value;
+    saveProject({ instructions: savedText });
+  };
+  instructions.oninput = () => {
+    clearTimeout(timer);
+    timer = setTimeout(saveInstructions, 500);
+  };
+  instructions.onchange = saveInstructions;
+
+  $('#pRename').onclick = () => {
+    const h1 = $('#pName');
+    const input = document.createElement('input');
+    input.className = 'title-input';
+    input.value = p.name;
+    input.maxLength = 80;
+    input.setAttribute('aria-label', 'Name des Projekts');
+    h1.replaceWith(input);
+    input.focus();
+    input.select();
+    const finish = async keep => {
+      input.onblur = null;
+      const name = input.value.trim();
+      if (keep && name && name !== p.name) {
+        const r = await saveProject({ name });
+        if (r.project) p.name = r.project.name;
+      }
+      h1.textContent = p.name;
+      input.replaceWith(h1);
+    };
+    input.onblur = () => finish(true);
+    input.onkeydown = e => {
+      if (e.key === 'Enter') finish(true);
+      if (e.key === 'Escape') finish(false);
+    };
+  };
+
+  confirmClick($('#pDelete'), async () => {
+    const r = await api.post('projects/delete', { id });
+    if (!r.ok) return toast('Das hat nicht geklappt.');
+    Chats.unlinkProject(id);
+    await loadProjects();
+    location.hash = '#/projects';
+  });
+  mountMemory($('#pMemory'), id);
+}
+
+// The list of facts of one project, or of the general memory: read, add, change, delete.
+async function mountMemory(el, project) {
+  const query = project ? `memory?project=${project}` : 'memory';
+  const body = extra => ({ project, ...extra });
+  const when = t => new Date(t * 1000).toLocaleDateString('de-DE');
+  const draw = async () => {
+    const r = await api.get(query);
+    if (!el.isConnected) return;
+    const facts = (r.facts || []).slice().reverse();
+    el.innerHTML = `
+      <form class="ms-input mem-add">
+        ${ic('plus', 17)}<input placeholder="Selbst etwas eintragen" maxlength="300" aria-label="Fakt hinzufügen">
+        <button class="btn sm" disabled>Merken</button>
+      </form>
+      ${facts.length ? `<div class="group">${facts.map(f => `
+        <div class="row" data-fact="${f.id}">
+          <div class="grow"><b class="mem-text">${esc(f.text)}</b><small>${f.source === 'chat' ? 'Aus einem Chat' : 'Von dir'} · ${when(f.created)}</small></div>
+          <div class="acts">
+            <button class="icon-btn" data-edit title="Ändern">${ic('edit', 16)}</button>
+            <button class="icon-btn" data-remove title="Löschen">${ic('trash', 16)}</button>
+          </div></div>`).join('')}</div>
+        <div class="mem-clear"><button class="btn ghost sm danger" id="memClear">Alles löschen</button></div>`
+      : '<p class="faint sm section-note">Noch nichts gespeichert. Erzähl in einem Chat etwas über dich oder sag „Merk dir …“.</p>'}`;
+    const form = $('form', el);
+    const input = $('input', form);
+    input.oninput = () => ($('button', form).disabled = !input.value.trim());
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const added = await api.post('memory/add', body({ text: input.value }));
+      if (!added.fact) toast('Das steht schon im Gedächtnis.');
+      await draw();
+      $('input', el)?.focus();
+    };
+    $$('[data-fact]', el).forEach(row => {
+      const fid = row.dataset.fact;
+      $('[data-remove]', row).onclick = async () => {
+        await api.post('memory/delete', body({ id: fid }));
+        draw();
+      };
+      $('[data-edit]', row).onclick = () => {
+        const text = $('.mem-text', row);
+        const edit = document.createElement('input');
+        edit.className = 'mem-edit';
+        edit.value = text.textContent;
+        edit.maxLength = 300;
+        edit.setAttribute('aria-label', 'Fakt ändern');
+        text.replaceWith(edit);
+        edit.focus();
+        const finish = async keep => {
+          edit.onblur = null;
+          const value = edit.value.trim();
+          if (keep && value && value !== text.textContent) await api.post('memory/edit', body({ id: fid, text: value }));
+          draw();
+        };
+        edit.onblur = () => finish(true);
+        edit.onkeydown = e => {
+          if (e.key === 'Enter') finish(true);
+          if (e.key === 'Escape') finish(false);
+        };
+      };
+    });
+    const clear = $('#memClear', el);
+    if (clear) confirmClick(clear, async () => {
+      await api.post('memory/clear', body());
+      draw();
+    });
+  };
+  await draw();
+}
+
+function renderMemorySettings(el) {
+  el.innerHTML = `
+    <div class="group-title">Allgemeines Gedächtnis <span>Für alle Chats ohne Projekt. Jedes Projekt hat sein eigenes.</span></div>
+    <div id="memBox"></div>
+    <p class="faint sm section-note">Liegt nur auf diesem Mac. Im Chat lässt es sich unter Optionen ausschalten.</p>`;
+  return mountMemory($('#memBox', el), null);
 }
 
 /* ================================================================ library */
@@ -1316,6 +1616,7 @@ async function showSettings(tab) {
     <div class="seg">
       <a href="#/settings?tab=content" class="${tab === 'content' ? 'on' : ''}">Inhalte</a>
       <a href="#/settings?tab=models" class="${tab === 'models' ? 'on' : ''}">KI-Modelle</a>
+      ${state.projects ? `<a href="#/settings?tab=memory" class="${tab === 'memory' ? 'on' : ''}">Gedächtnis</a>` : ''}
       <a href="#/settings?tab=system" class="${tab === 'system' ? 'on' : ''}">System</a>
     </div>
     <div id="tasksBox"></div>
@@ -1325,6 +1626,7 @@ async function showSettings(tab) {
   const body = $('#tabBody');
   if (tab === 'models') return renderModels(body);
   if (tab === 'system') return renderSystem(body);
+  if (tab === 'memory' && state.projects) return renderMemorySettings(body);
   return renderContent(body);
 }
 
@@ -2300,7 +2602,7 @@ async function pollTasks() {
     if (state.view === 'settings') {
       const tab = new URLSearchParams(location.hash.split('?')[1] || '').get('tab') || 'content';
       const body = $('#tabBody');
-      if (body) (tab === 'models' ? renderModels : tab === 'content' ? renderContent : renderSystem)(body);
+      if (body && tab !== 'memory') (tab === 'models' ? renderModels : tab === 'content' ? renderContent : renderSystem)(body);
     }
   }
   lastActive = active.length;
@@ -2311,4 +2613,4 @@ setInterval(pollTasks, 2000);
 
 hydrateIcons();
 pollTasks();
-loadBooks().finally(route);
+Promise.allSettled([loadBooks(), loadProjects()]).finally(route);

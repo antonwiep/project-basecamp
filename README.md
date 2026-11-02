@@ -9,6 +9,8 @@ Offline-Wissen und lokale KI für den Mac. Wikipedia, WikiMed, iFixit, Bücher, 
 ## Was es kann
 
 - Chat mit Quellen: Antworten aus deiner eigenen Bibliothek, mit Zitaten [1], [2]. Ein Klick öffnet den Artikel daneben.
+- Gedächtnis: Basecamp merkt sich, was du über dich erzählst, und nutzt es in späteren Chats. Du siehst unter jeder Antwort, was neu dazukam, und kannst alles ändern oder löschen.
+- Projekte: Eigene Anweisungen, eigene Chats und ein eigenes Gedächtnis je Projekt. Kein Projekt sieht die Fakten eines anderen.
 - Lesen wie im Original: Wikipedia mit Inhaltsverzeichnis, Link-Vorschau beim Drüberfahren, Nachtmodus und Textgröße.
 - ⌘K-Suche: Titel, Volltext, Orte und eigene Dateien. Auch nur in einer Quelle.
 - Karten: Offline-Karten mit deutscher Beschriftung und Ortssuche.
@@ -107,6 +109,8 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 - Schutz gegen DNS-Rebinding: Nur bekannte Hostnamen werden angenommen.
 - Der Code-Agent geht nur direkt auf dem Mac, nie übers WLAN.
 - Agent-Dateien bleiben im Arbeitsordner (Standard `data/code`). Befehle brauchen eine Freigabe, außer "Automatisch" ist an.
+- Projekte und Gedächtnis gehen nur direkt auf dem Mac, nie übers WLAN. Auf dem Handy läuft der Chat ohne sie.
+- Das Gedächtnis lernt nur aus dem, was du selbst schreibst, nie aus Antworten oder Artikeln. Es löscht nur, wenn du es sagst. Es liegt in `data/memory` und `data/projects.json`. `./basecamp usb` kopiert es nicht auf den Stick. Läuft Basecamp vom Stick, entsteht dort ein eigenes.
 
 ## Aufbau
 
@@ -116,7 +120,7 @@ Tipp: Den Stick als APFS oder ExFAT formatieren. FAT32 geht nicht, weil Dateien 
 - `server/static/`: Oberfläche (HTML, CSS, JavaScript ohne Build-Schritt)
 - `server/static/reader/`: läuft in jedem Artikel (Inhaltsverzeichnis, Link-Vorschau, Nachtmodus)
 - `catalog.json`: Quellen, Pakete und Modelle
-- `data/`: Inhalte, Karten, eigene Dateien, Agent-Ordner (nicht im Repo)
+- `data/`: Inhalte, Karten, eigene Dateien, Agent-Ordner, Projekte, Gedächtnis (nicht im Repo)
 
 ## Quellen und Lizenzen
 

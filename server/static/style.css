@@ -969,3 +969,67 @@ select.select {
 .tc-src { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
 .tc-err { padding: 8px 12px; color: var(--danger); font-size: 13px; border-top: 1px solid var(--border); }
 .tc-approve { display: flex; align-items: center; gap: 6px; padding: 8px 10px 8px 12px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--amber) 8%, var(--surface)); color: var(--text-2); }
+
+/* ------------------------------------------------------------ projects and memory */
+.project-chip .picker-btn span { max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.project-chip .menu-label { padding-top: 6px; }
+.project-head { align-items: center; gap: 6px; }
+.project-head h1 { min-width: 0; overflow-wrap: anywhere; }
+.title-input {
+  flex: 1;
+  min-width: 0;
+  font: 600 30px/1.15 var(--font-display);
+  letter-spacing: -.035em;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border-2);
+  outline: 0;
+  padding: 0;
+}
+.row.link { transition: background .15s; }
+.row.link:hover { background: var(--hover); }
+.row.link > .i:last-child { color: var(--text-3); }
+.section-note { margin: 0 4px 26px; }
+.field {
+  display: block;
+  width: 100%;
+  margin-bottom: 26px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  font-size: 14.5px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: 0;
+}
+.field:focus { border-color: var(--text-3); }
+.field::placeholder { color: var(--text-3); }
+.mem-add { margin-bottom: 14px; }
+.mem-add .i { color: var(--text-3); }
+.row b.mem-text { display: block; overflow-wrap: anywhere; font-weight: 400; }
+.mem-edit {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--border-2);
+  outline: 0;
+  background: none;
+  font-size: 14.5px;
+}
+.mem-clear { display: flex; justify-content: flex-end; margin: -18px 0 26px; }
+.mem-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+.mem-note .i { margin-top: 1px; }
+.mem-note:hover { color: var(--text-2); }
+/* a composer on a project page: the chat around it appears with the first message */
+.chat.embedded { flex: none; display: block; padding: 0; margin-bottom: 26px; }
+.chat.embedded .thread, .chat.embedded .starters, .chat.embedded .disclaimer { display: none; }
+.chat.embedded .composer-wrap { padding: 0; }
