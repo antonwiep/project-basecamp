@@ -171,7 +171,7 @@ kbd {
 @media (min-width: 901px) {
   .app.sb-collapsed .sidebar { width: var(--rail-w); }
   .app.sb-collapsed .sb-head { justify-content: center; padding: 10px 0 6px; }
-  .app.sb-collapsed .brand span, .app.sb-collapsed #sbClose { display: none; }
+  .app.sb-collapsed .brand > span:not(.logo), .app.sb-collapsed #sbClose { display: none; }
   .app.sb-collapsed .sb-nav, .app.sb-collapsed .sb-foot { align-items: center; padding-left: 0; padding-right: 0; }
   .app.sb-collapsed .sb-link { width: 40px; height: 40px; padding: 0; justify-content: center; }
   .app.sb-collapsed .sb-link span, .app.sb-collapsed .sb-link kbd { display: none; }
